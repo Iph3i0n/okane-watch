@@ -1,0 +1,32 @@
+{
+  "name": "okane-watch",
+  "version": "0.0.1",
+  "description": "The simple family budgeting tool",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PaulPopat/okane-watch.git"
+  },
+  "author": "paulpopat",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PaulPopat/okane-watch/issues"
+  },
+  "homepage": "https://github.com/PaulPopat/okane-watch#readme",
+  "dependencies": {
+    "next": "^12.1.6",
+    "react": "^18.1.0",
+    "react-dom": "^18.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.36",
+    "@types/react": "^18.0.9",
+    "typescript": "^4.7.2"
+  }
+}
