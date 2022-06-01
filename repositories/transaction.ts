@@ -137,3 +137,12 @@ export async function Update(id: string, transaction: Omit<Transaction, "id">) {
 
   return id;
 }
+
+export async function Delete(id: string) {
+  const db = await GetDb();
+  await db.Run(
+    `DELETE FROM transactions
+     WHERE id = $id`,
+    { $id: id }
+  );
+}

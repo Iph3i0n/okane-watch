@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/PaulPopat/okane-watch#readme",
   "dependencies": {
+    "@paulpopat/api-interface": "^1.1.12",
     "@paulpopat/safe-type": "^2.2.1",
     "dotenv": "^16.0.1",
     "fs-extra": "^10.1.0",
