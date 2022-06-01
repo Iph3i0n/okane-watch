@@ -7,6 +7,7 @@ const Table = Styled.table`
   border-collapse: collapse; 
   text-align: left;
   overflow: hidden;
+  margin-bottom: 2rem;
 
   thead tr {
     border: none;

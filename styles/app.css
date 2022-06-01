@@ -6,6 +6,11 @@
   --body: #222;
   --bg-white: #fff;
   --bg-surface: #f7f7f7;
+  --theme-dark: #0061ff;
+  --theme-light: #e81cff;
+
+  --variant-dark: #40c9ff;
+  --variant-light: #60efff;
 
   --border-radius: 0.5rem;
 

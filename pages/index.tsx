@@ -1,6 +1,6 @@
 import { IsIntersection, IsNumber, IsObject } from "@paulpopat/safe-type";
 import React from "react";
-import { InvisibleButton } from "../components/button";
+import { InvisibleButton, ThemeButton } from "../components/button";
 import { IconEdit } from "../components/icons";
 import TableFor from "../components/table";
 import { H1 } from "../components/text";
@@ -69,6 +69,7 @@ export default CreatePage(
             </Table.Row>
           </tbody>
         </Table>
+        <ThemeButton type="button">Add</ThemeButton>
       </>
     );
   }
