@@ -1,6 +1,6 @@
 import { GetDb } from "../services/database";
 import { v4 as Guid } from "uuid";
-import { Assert, IsArray } from "@paulpopat/safe-type";
+import { Assert, IsArray, IsTuple } from "@paulpopat/safe-type";
 import { IsPerson, Person } from "../types/person";
 
 export async function Init() {
@@ -19,6 +19,18 @@ export async function GetAll() {
   return rows;
 }
 
+export async function Get(id: string) {
+  const db = await GetDb();
+  const rows = await db.All(
+    `SELECT id, name FROM people
+     WHERE id = $id`,
+    { $id: id }
+  );
+
+  Assert(IsTuple(IsPerson), rows);
+  return rows[0];
+}
+
 export async function Add(name: string) {
   const id = Guid();
   const db = await GetDb();
@@ -30,7 +42,6 @@ export async function Add(name: string) {
 
   return id;
 }
-
 
 export async function Update(id: string, subject: Omit<Person, "id">) {
   const db = await GetDb();

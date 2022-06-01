@@ -9,6 +9,7 @@ import {
   IsString,
   IsTuple,
   IsType,
+  Optional,
 } from "@paulpopat/safe-type";
 
 const IsTransactionDto = IsObject({
@@ -107,8 +108,8 @@ export async function GetTotalForCategory(
     }
   );
 
-  Assert(IsTuple(IsObject({ total: IsNumber })), rows);
-  return rows[0].total;
+  Assert(IsTuple(IsObject({ total: Optional(IsNumber) })), rows);
+  return rows[0].total ?? 0;
 }
 
 export async function Update(id: string, transaction: Omit<Transaction, "id">) {

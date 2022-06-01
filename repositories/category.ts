@@ -1,6 +1,6 @@
 import { GetDb } from "../services/database";
 import { v4 as Guid } from "uuid";
-import { Assert, IsArray } from "@paulpopat/safe-type";
+import { Assert, IsArray, IsTuple } from "@paulpopat/safe-type";
 import { Category, IsCategory } from "../types/category";
 
 export async function Init() {
@@ -18,6 +18,17 @@ export async function GetAll() {
   const rows = await db.All(`SELECT id, name, budget FROM categories`);
   Assert(IsArray(IsCategory), rows);
   return rows;
+}
+
+export async function Get(id: string) {
+  const db = await GetDb();
+
+  const rows = await db.All(
+    `SELECT id, name, budget FROM categories WHERE id = $id`,
+    { $id: id }
+  );
+  Assert(IsTuple(IsCategory), rows);
+  return rows[0];
 }
 
 export async function Add(name: string, budget: number) {

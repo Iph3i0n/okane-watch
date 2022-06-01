@@ -15,11 +15,13 @@ export default BuildApi({
 
     return {
       status: 200,
-      body: await GetTotalForCategory(
-        query.id,
-        parseInt(query.month),
-        parseInt(query.year)
-      ),
+      body: {
+        spend: await GetTotalForCategory(
+          query.id,
+          parseInt(query.month),
+          parseInt(query.year)
+        ),
+      },
     };
   },
 });

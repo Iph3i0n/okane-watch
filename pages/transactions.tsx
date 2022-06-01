@@ -6,33 +6,24 @@ import TableFor from "../components/table";
 import { H1 } from "../components/text";
 import ApiClient from "../services/api";
 import CreatePage from "../services/page";
-import { IsCategory } from "../types/category";
+import { IsCompleteTransaction } from "../types/transaction";
 import { Year, Month } from "../utils/constants";
 import { ToCurrencyString } from "../utils/number";
 
-const Table = TableFor(
-  IsIntersection(
-    IsObject({
-      spend: IsNumber,
-    }),
-    IsCategory
-  )
-);
+const Table = TableFor(IsCompleteTransaction);
 
 export default CreatePage(
   async (ctx) => {
-    const categories = await ApiClient.Categories.GetAll();
+    const transactions = await ApiClient.Transactions.GetMonth({
+      month: Month.toString(),
+      year: Year.toString(),
+    });
     return {
-      categories: await Promise.all(
-        categories.map(async (c) => ({
-          ...c,
-          spend: (
-            await ApiClient.Categories.Spend({
-              id: c.id,
-              month: Month.toString(),
-              year: Year.toString(),
-            })
-          ).spend,
+      transactions: await Promise.all(
+        transactions.map(async (t) => ({
+          ...t,
+          user: await ApiClient.People.Get({ id: t.user }),
+          category: await ApiClient.Categories.Get({ id: t.category }),
         }))
       ),
     };
@@ -40,14 +31,15 @@ export default CreatePage(
   (props) => {
     return (
       <>
-        <H1>Overview</H1>
-        <Table rows={props.categories}>
+        <H1>Transactions</H1>
+        <Table rows={props.transactions}>
           <thead>
             <tr>
+              <th>Date</th>
+              <th>Person</th>
+              <th>Description</th>
               <th>Category</th>
-              <th>Budget</th>
-              <th>Spend</th>
-              <th>Diff</th>
+              <th>Amount</th>
               <th></th>
             </tr>
           </thead>
@@ -55,10 +47,15 @@ export default CreatePage(
             <Table.Row>
               {(row) => (
                 <>
-                  <td>{row.name}</td>
-                  <td>{ToCurrencyString(row.budget)}</td>
-                  <td>{ToCurrencyString(row.spend)}</td>
-                  <td>{ToCurrencyString(row.budget - row.spend)}</td>
+                  <td>
+                    {row.when.year.toString().padStart(4, "0")}-
+                    {row.when.month.toString().padStart(2, "0")}-
+                    {row.when.day.toString().padStart(2, "0")}
+                  </td>
+                  <td>{row.user.name}</td>
+                  <td>{row.description}</td>
+                  <td>{row.category.name}</td>
+                  <td>{ToCurrencyString(row.amount)}</td>
                   <td>
                     <InvisibleButton type="button">
                       <IconEdit colour="var(--body)" width="24" height="24" />

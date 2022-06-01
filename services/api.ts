@@ -10,18 +10,18 @@ import { IsCategory } from "../types/category";
 import { IsPerson } from "../types/person";
 import { IsTransaction } from "../types/transaction";
 
-export default Api(
+const ApiClient = Api(
   {
     Transactions: {
       GetMonth: {
         method: "GET",
-        url: "/transactions",
+        url: "/api/transactions",
         parameters: { month: IsString, year: IsString },
         returns: IsArray(IsTransaction),
       },
       Add: {
         method: "POST",
-        url: "/transactions",
+        url: "/api/transactions",
         body: IsObject({
           user: IsString,
           category: IsString,
@@ -33,7 +33,7 @@ export default Api(
       },
       Update: {
         method: "PUT",
-        url: "/transactions/:id",
+        url: "/api/transactions/:id",
         parameters: { id: IsString },
         body: IsObject({
           user: IsString,
@@ -46,7 +46,7 @@ export default Api(
       },
       Delete: {
         method: "DELETE",
-        url: "/transactions/:id",
+        url: "/api/transactions/:id",
         parameters: { id: IsString },
         returns: DoNotCare,
       },
@@ -54,18 +54,24 @@ export default Api(
     People: {
       GetAll: {
         method: "GET",
-        url: "/people",
+        url: "/api/people",
         returns: IsArray(IsPerson),
+      },
+      Get: {
+        method: "GET",
+        url: "/api/people/:id",
+        parameters: { id: IsString },
+        returns: IsPerson,
       },
       Add: {
         method: "POST",
-        url: "/people",
+        url: "/api/people",
         body: IsObject({ name: IsString }),
         returns: IsPerson,
       },
       Update: {
         method: "PUT",
-        url: "/people/:id",
+        url: "/api/people/:id",
         parameters: { id: IsString },
         body: IsObject({ name: IsString }),
         returns: IsPerson,
@@ -74,29 +80,43 @@ export default Api(
     Categories: {
       GetAll: {
         method: "GET",
-        url: "/categories",
+        url: "/api/categories",
         returns: IsArray(IsCategory),
+      },
+      Get: {
+        method: "GET",
+        url: "/api/categories/:id",
+        parameters: { id: IsString },
+        returns: IsCategory,
       },
       Add: {
         method: "POST",
-        url: "/categories",
+        url: "/api/categories",
         body: IsObject({ name: IsString, budget: IsNumber }),
         returns: IsCategory,
       },
       Update: {
         method: "PUT",
-        url: "/categories/:id",
+        url: "/api/categories/:id",
         parameters: { id: IsString },
         body: IsObject({ name: IsString, budget: IsNumber }),
         returns: IsCategory,
       },
       Spend: {
         method: "GET",
-        url: "/categories/:id/spend",
+        url: "/api/categories/:id/spend",
         parameters: { id: IsString, month: IsString, year: IsString },
-        returns: IsNumber,
+        returns: IsObject({ spend: IsNumber }),
       },
     },
   },
-  { base: "/api" }
+  {
+    base: process.env.NEXT_PUBLIC_SITE_URL,
+    middleware: async (v) => {
+      console.log(`Sending request to ${v.url}`);
+      return v;
+    },
+  }
 );
+
+export default ApiClient;
