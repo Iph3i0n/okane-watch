@@ -12,9 +12,7 @@ CREATE TABLE IF NOT EXISTS transactions (
   category TEXT NOT NULL,
   description TEXT NOT NULL,
   amount INTEGER NOT NULL,
-  day INTEGER NOT NULL,
-  month INTEGER NOT NULL,
-  year INTEGER NOT NULL,
+  date DATE NOT NULL,
   CONSTRAINT fk_category FOREIGN KEY(category) REFERENCES categories(id),
   CONSTRAINT fk_person FOREIGN KEY(person) REFERENCES people(id)
 );

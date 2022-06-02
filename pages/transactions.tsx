@@ -14,7 +14,13 @@ import { H1 } from "../components/text";
 import ApiClient from "../services/api";
 import CreatePage from "../services/page";
 import { IsCompleteTransaction, Transaction } from "../types/transaction";
-import { Year, Month, Day } from "../utils/constants";
+import {
+  Year,
+  Month,
+  Day,
+  NowObject,
+  NextMonthObject,
+} from "../utils/constants";
 import { ToCurrencyString } from "../utils/number";
 
 const Table = TableFor(IsCompleteTransaction);
@@ -47,8 +53,8 @@ async function GetFullTransaction(transaction: Transaction) {
 export default CreatePage(
   async (ctx) => {
     const transactions = await ApiClient.Transactions.GetMonth({
-      month: Month.toString(),
-      year: Year.toString(),
+      from: ToDateString(NowObject),
+      to: ToDateString(NextMonthObject),
     });
 
     return {

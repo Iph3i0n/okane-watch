@@ -1,3 +1,4 @@
+import { FromDateString } from "$types/utility";
 import { Assert, IsNumber, IsObject, IsString } from "@paulpopat/safe-type";
 import { Add, GetTransactions } from "../../../repositories/transaction";
 import { BuildApi } from "../../../utils/api";
@@ -11,8 +12,8 @@ const IsPost = IsObject({
 });
 
 const IsGet = IsObject({
-  month: IsString,
-  year: IsString,
+  from: IsString,
+  to: IsString,
 });
 
 export default BuildApi({
@@ -22,7 +23,10 @@ export default BuildApi({
 
     return {
       status: 200,
-      body: await GetTransactions(parseInt(query.month), parseInt(query.year)),
+      body: await GetTransactions(
+        FromDateString(query.from),
+        FromDateString(query.to)
+      ),
     };
   },
   async POST(req) {

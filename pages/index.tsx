@@ -1,4 +1,5 @@
 import FormFor from "$components/form";
+import { ToDateString } from "$types/utility";
 import {
   IsIntersection,
   IsNumber,
@@ -14,7 +15,7 @@ import { H1 } from "../components/text";
 import ApiClient from "../services/api";
 import CreatePage from "../services/page";
 import { Category, IsCategory } from "../types/category";
-import { Year, Month } from "../utils/constants";
+import { NextMonthObject, NowObject } from "../utils/constants";
 import { ToCurrencyString } from "../utils/number";
 
 const Table = TableFor(
@@ -37,8 +38,8 @@ async function GetFullCategory(category: Category) {
     spend: (
       await ApiClient.Categories.Spend({
         id: category.id,
-        month: Month.toString(),
-        year: Year.toString(),
+        from: ToDateString(NowObject),
+        to: ToDateString(NextMonthObject),
       })
     ).spend,
   };

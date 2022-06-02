@@ -1,11 +1,12 @@
+import { FromDateString } from "$types/utility";
 import { Assert, IsObject, IsString } from "@paulpopat/safe-type";
 import { GetTotalForCategory } from "../../../../repositories/transaction";
 import { BuildApi } from "../../../../utils/api";
 
 const IsGet = IsObject({
   id: IsString,
-  month: IsString,
-  year: IsString,
+  from: IsString,
+  to: IsString,
 });
 
 export default BuildApi({
@@ -18,8 +19,8 @@ export default BuildApi({
       body: {
         spend: await GetTotalForCategory(
           query.id,
-          parseInt(query.month),
-          parseInt(query.year)
+          FromDateString(query.from),
+          FromDateString(query.to)
         ),
       },
     };

@@ -14,6 +14,16 @@ export function ToDateString(date: DateObject) {
     .padStart(2, "0")}-${date.day.toString().padStart(2, "0")}`;
 }
 
+export function FromDateString(date: string) {
+  if (!date.match(/[0-9][0-9][0-9][0-9]\-[0-9][0-9]\-[0-9][0-9]/gm)) {
+    throw new Error("Invalid date format");
+  }
+
+  const [year, month, day] = date.split("-");
+
+  return { year: parseInt(year), month: parseInt(month), day: parseInt(day) };
+}
+
 export function ToJsDate(date: DateObject) {
   return new Date(ToDateString(date));
 }

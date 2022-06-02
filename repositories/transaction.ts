@@ -4,6 +4,7 @@ import { v4 as Guid } from "uuid";
 import {
   Assert,
   IsArray,
+  IsDate,
   IsNumber,
   IsObject,
   IsString,
@@ -11,6 +12,7 @@ import {
   IsType,
   Optional,
 } from "@paulpopat/safe-type";
+import { DateObject, FromJsDate, ToJsDate } from "$types/utility";
 
 const IsTransactionDto = IsObject({
   id: IsString,
@@ -18,9 +20,7 @@ const IsTransactionDto = IsObject({
   category: IsString,
   description: IsString,
   amount: IsNumber,
-  day: IsNumber,
-  month: IsNumber,
-  year: IsNumber,
+  date: IsDate,
 });
 
 type TransactionDto = IsType<typeof IsTransactionDto>;
@@ -32,11 +32,7 @@ function FromDto(transaction: TransactionDto): Transaction {
     category: transaction.category,
     description: transaction.description,
     amount: transaction.amount,
-    when: {
-      day: transaction.day,
-      month: transaction.month,
-      year: transaction.year,
-    },
+    when: FromJsDate(transaction.date),
   };
 }
 
@@ -44,30 +40,28 @@ export async function Add(transaction: Omit<Transaction, "id">) {
   const id = Guid();
   const db = await GetDb();
   await db.Query(
-    `INSERT INTO transactions(id, person, category, description, amount, day, month, year)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+    `INSERT INTO transactions(id, person, category, description, amount, date)
+     VALUES ($1, $2, $3, $4, $5, $6)`,
     id,
     transaction.person,
     transaction.category,
     transaction.description,
     transaction.amount,
-    transaction.when.day,
-    transaction.when.month,
-    transaction.when.year
+    ToJsDate(transaction.when)
   );
 
   await db.End();
   return id;
 }
 
-export async function GetTransactions(month: number, year: number) {
+export async function GetTransactions(from: DateObject, to: DateObject) {
   const db = await GetDb();
   const rows = await db.Query(
-    `SELECT id, person, category, description, amount, day, month, year
+    `SELECT id, person, category, description, amount, date
      FROM transactions
-     WHERE month = $1 AND year = $2`,
-    month,
-    year
+     WHERE date > $1 AND date < $2`,
+    ToJsDate(from),
+    ToJsDate(to)
   );
 
   await db.End();
@@ -77,22 +71,22 @@ export async function GetTransactions(month: number, year: number) {
 
 export async function GetTotalForCategory(
   category_id: string,
-  month: number,
-  year: number
+  from: DateObject,
+  to: DateObject
 ) {
   const db = await GetDb();
   const rows = await db.Query(
     `SELECT SUM(amount) as total
      FROM transactions
-     WHERE month = $1 AND year = $2 AND category = $3`,
-    month,
-    year,
+     WHERE date > $1 AND date < $2 AND category = $3`,
+    ToJsDate(from),
+    ToJsDate(to),
     category_id
   );
 
   await db.End();
-  Assert(IsTuple(IsObject({ total: Optional(IsNumber) })), rows);
-  return rows[0].total ?? 0;
+  Assert(IsTuple(IsObject({ total: Optional(IsString) })), rows);
+  return parseInt(rows[0].total ?? "0");
 }
 
 export async function Update(id: string, transaction: Omit<Transaction, "id">) {
@@ -103,18 +97,14 @@ export async function Update(id: string, transaction: Omit<Transaction, "id">) {
          category = $3,
          description = $4,
          amount = $5,
-         day = $6,
-         month = $7,
-         year = $8
+         date = $6
      WHERE id = $1`,
     id,
     transaction.person,
     transaction.category,
     transaction.description,
     transaction.amount,
-    transaction.when.day,
-    transaction.when.month,
-    transaction.when.year
+    ToJsDate(transaction.when)
   );
 
   await db.End();

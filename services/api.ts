@@ -1,3 +1,4 @@
+import { IsQueries } from "$types/queries";
 import { IsDateObject } from "$types/utility";
 import Api from "@paulpopat/api-interface";
 import {
@@ -6,6 +7,7 @@ import {
   IsString,
   IsNumber,
   DoNotCare,
+  Optional,
 } from "@paulpopat/safe-type";
 import { IsCategory } from "../types/category";
 import { IsPerson } from "../types/person";
@@ -17,7 +19,7 @@ const ApiClient = Api(
       GetMonth: {
         method: "GET",
         url: "/api/transactions",
-        parameters: { month: IsString, year: IsString },
+        parameters: { from: IsString, to: IsString },
         returns: IsArray(IsTransaction),
       },
       Add: {
@@ -106,8 +108,27 @@ const ApiClient = Api(
       Spend: {
         method: "GET",
         url: "/api/categories/:id/spend",
-        parameters: { id: IsString, month: IsString, year: IsString },
+        parameters: { id: IsString, from: IsString, to: IsString },
         returns: IsObject({ spend: IsNumber }),
+      },
+    },
+    Query: {
+      GetAll: {
+        method: "GET",
+        url: "/api/queries",
+        returns: IsQueries,
+      },
+      Run: {
+        method: "GET",
+        url: "/api/queries/:slug",
+        parameters: {
+          slug: IsString,
+          from_date: Optional(IsString),
+          to_date: Optional(IsString),
+          person: Optional(IsString),
+          category: Optional(IsString),
+        },
+        returns: DoNotCare,
       },
     },
   },
