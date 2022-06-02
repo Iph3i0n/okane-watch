@@ -8,7 +8,7 @@ export const InvisibleButton = Styled.button`
   cursor: pointer;
 
   svg {
-    transition: opacity 100ms, transform 100ms;
+    transition: opacity var(--animation-duration), transform var(--animation-duration);
   }
 
   &:hover svg {
@@ -35,7 +35,7 @@ export const ThemeButton = Styled.button`
   font-size: var(--font-size-text);
   margin:  var(--text-padding-y) var(--text-padding-x);
   cursor: pointer;
-  transition: background-color 100ms, opacity 100ms;
+  transition: background-color var(--animation-duration), opacity var(--animation-duration);
 
   &:hover {
     background-color: var(--theme-light);

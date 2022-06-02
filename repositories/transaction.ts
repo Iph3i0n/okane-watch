@@ -1,5 +1,5 @@
-import { GetDb } from "../services/database";
-import { IsTransaction, Transaction } from "../types/transaction";
+import { GetDb } from "$services/database";
+import { Transaction } from "$types/transaction";
 import { v4 as Guid } from "uuid";
 import {
   Assert,

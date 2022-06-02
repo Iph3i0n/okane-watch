@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "ts-node --project tsconfig.server.json ./server.ts",
     "build": "tsc --project tsconfig.server.json && next build",
-    "start": "next start",
+    "start": "node -r tsconfig-paths/register .",
     "lint": "next lint"
   },
   "repository": {
@@ -30,6 +30,7 @@
     "react-dom": "^18.1.0",
     "sqlite3": "^5.0.8",
     "styled-components": "^5.3.5",
+    "tsconfig-paths": "^4.0.0",
     "uuid": "^8.3.2"
   },
   "devDependencies": {

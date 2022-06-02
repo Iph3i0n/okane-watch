@@ -3,3 +3,4 @@ node_modules
 resources
 dist
 **/.DS_Store
+.env

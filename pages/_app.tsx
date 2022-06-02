@@ -47,6 +47,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
           <nav>
             <Link href="/">Overview</Link>
             <Link href="/transactions">Transactions</Link>
+            <Link href="/people">People</Link>
           </nav>
         </Container>
       </Header>

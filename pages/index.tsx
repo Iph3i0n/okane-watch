@@ -2,6 +2,7 @@ import { IsIntersection, IsNumber, IsObject } from "@paulpopat/safe-type";
 import React from "react";
 import { InvisibleButton, ThemeButton } from "../components/button";
 import { IconEdit } from "../components/icons";
+import Modal from "../components/modal";
 import TableFor from "../components/table";
 import { H1 } from "../components/text";
 import ApiClient from "../services/api";
@@ -38,6 +39,8 @@ export default CreatePage(
     };
   },
   (props) => {
+    const [adding, set_adding] = React.useState(false);
+
     return (
       <>
         <H1>Overview</H1>
@@ -69,7 +72,10 @@ export default CreatePage(
             </Table.Row>
           </tbody>
         </Table>
-        <ThemeButton type="button">Add</ThemeButton>
+        <ThemeButton type="button" onClick={() => set_adding(true)}>
+          Add
+        </ThemeButton>
+        <Modal open={adding}></Modal>
       </>
     );
   }

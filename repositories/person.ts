@@ -1,7 +1,7 @@
-import { GetDb } from "../services/database";
+import { GetDb } from "$services/database";
 import { v4 as Guid } from "uuid";
 import { Assert, IsArray, IsTuple } from "@paulpopat/safe-type";
-import { IsPerson, Person } from "../types/person";
+import { IsPerson, Person } from "$types/person";
 
 export async function Init() {
   const db = await GetDb();
