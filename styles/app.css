@@ -14,6 +14,8 @@
 
   --border-radius: 0.5rem;
 
+  --block-padding: 1rem;
+
   --text-padding-x: 1rem;
   --text-padding-y: 0.5rem;
   --text-padding-x-large: 2rem;
@@ -24,12 +26,16 @@
   --font-weight-large: 500;
 
   --font-size-h1: 30px;
+  --font-size-h2: 20px;
   --font-size-text: 16px;
 
   --screen-max-width: 1200px;
   --backdrop-opacity: 0.3;
 
   --animation-duration: 100ms;
+
+  --modal-width: 800px;
+  --modal-height: 500px;
 }
 
 body {
@@ -45,5 +51,59 @@ body {
 @media screen and (prefers-reduced-motion: reduce) {
   * {
     animation: none !important;
+  }
+}
+
+@keyframes fade-in {
+  0% {
+    display: none;
+    opacity: 0;
+  }
+
+  1% {
+    display: flex;
+    opacity: 0;
+  }
+
+  100% {
+    opacity: var(--backdrop-opacity);
+  }
+}
+
+@keyframes fade-out {
+  0% {
+    display: block;
+    opacity: var(--backdrop-opacity);
+  }
+
+  99% {
+    display: block;
+    opacity: 0;
+  }
+
+  100% {
+    display: none;
+    opacity: 0;
+  }
+}
+
+@keyframes modal-fade-in {
+  0% {
+    transform: translateY(100px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes modal-fade-out {
+  0% {
+    transform: translateY(0);
+  }
+
+  100% {
+    transform: translateY(100px);
   }
 }

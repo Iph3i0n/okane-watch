@@ -15,6 +15,8 @@
     "tsconfig.json": true,
     "tsconfig.server.json": true,
     "package-lock.json": true,
-    "dist": true
+    "dist": true,
+    ".env": true,
+    ".babelrc": true
   }
 }

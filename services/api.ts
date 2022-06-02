@@ -113,7 +113,7 @@ const ApiClient = Api(
   {
     base: process.env.NEXT_PUBLIC_SITE_URL,
     middleware: async (v) => {
-      console.log(`Sending request to ${v.url}`);
+      console.log(`Sending ${v.method} to ${v.url}`);
       return v;
     },
   }

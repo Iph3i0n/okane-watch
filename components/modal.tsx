@@ -1,72 +1,89 @@
+import C from "$utils/class-name";
 import React from "react";
 import Styled from "styled-components";
+import { InvisibleButton } from "./button";
+import { IconClose } from "./icons";
+import { H2 } from "./text";
 
-const ModalBackdrop = Styled.div`
+const ModalContainer = Styled.div`
   display: none;
-  opacity: 0;
-  
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-
-  background: var(--body);
-  z-index: 100;
-
-  @keyframes fade-in {
-    0% {
-      display: none;
-      opacity: 0;
-    }
-
-    1% {
-      display: block;
-      opacity: 0;
-    }
-
-    100% {
-      opacity: var(--backdrop-opacity);
-    }
-  }
-
-  @keyframes fade-out {
-    0% {
-      display: block;
-      opacity: var(--backdrop-opacity);
-    }
-
-    99% {
-      display: block;
-      opacity: 0;
-    }
-
-    100% {
-      display: none;
-      opacity: 0;
-    }
-  }
+  align-items: center;
+  justify-content: center;
 
   &.open {
-    display: block;
-    opacity: var(--backdrop-opacity);
-    animation-duration: var(--animation-duration);
-    animation-name: fade-in;
+    opacity: 1;
+    display: flex;
+    animation: fade-in var(--animation-duration);
   }
 
   &.closed {
     opacity: 0;
     display: none;
-    animation-duration: var(--animation-duration);
-    animation-name: fade-out;
+    animation: fade-out var(--animation-duration);
+  }
+
+  .modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: var(--backdrop-opacity);
+    background: var(--body);
+    z-index: 100;
+  }
+
+  .modal-body {
+    position: relative;
+    max-width: var(--modal-width);
+    max-height: var(--modal-height);
+    width: calc(100% - (var(--block-padding) * 2));
+    margin: var(--block-padding);
+
+    background: var(--bg-white);
+    padding: var(--block-padding);
+    border-radius: var(--border-radius);
+    z-index: 101;
+    
+    &.open {
+      animation: modal-fade-in var(--animation-duration);
+    }
+
+    &.closed {
+      animation: modal-fade-out var(--animation-duration);
+    }
   }
 `;
 
-const Modal: React.C<{ open: boolean }> = ({ children, open }) => {
+const CloseButtonContainer = Styled.div`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+`;
+
+const Modal: React.C<{
+  open: boolean;
+  on_close: () => void;
+  title: string;
+}> = ({ children, open, on_close, title }) => {
   return (
-    <ModalBackdrop className={open ? "open" : "closed"}>
-      {children}
-    </ModalBackdrop>
+    <ModalContainer className={open ? "open" : "closed"}>
+      <div className="modal-backdrop" onClick={on_close} />
+      <section className={C("modal-body", open ? "open" : "closed")}>
+        <H2>{title}</H2>
+        <CloseButtonContainer>
+          <InvisibleButton type="button" onClick={on_close}>
+            <IconClose width="24" height="24" colour="var(--body)" />
+          </InvisibleButton>
+        </CloseButtonContainer>
+        {children}
+      </section>
+    </ModalContainer>
   );
 };
 

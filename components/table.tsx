@@ -48,11 +48,11 @@ export default function TableFor<T>(schema: Checker<T>) {
         const rows = React.useContext(TableContext);
 
         return (
-          <tr>
+          <>
             {rows.map((r, i) => (
-              <React.Fragment key={i}>{children(r)}</React.Fragment>
+              <tr key={i}>{children(r)}</tr>
             ))}
-          </tr>
+          </>
         );
       }) as React.FC<{ children: (row: T) => JSX.Element }>,
     }

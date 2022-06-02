@@ -33,12 +33,36 @@ export const ThemeButton = Styled.button`
   color: var(--bg-white);
   font-family: var(--font-family);
   font-size: var(--font-size-text);
-  margin:  var(--text-padding-y) var(--text-padding-x);
   cursor: pointer;
   transition: background-color var(--animation-duration), opacity var(--animation-duration);
 
   &:hover {
     background-color: var(--theme-light);
+  }
+
+  &:active {
+    opacity: 0.4;
+  }
+
+  &:focus {
+    background-color: var(--theme-light);
+  }
+`;
+
+export const VariantButton = Styled.button`
+  margin: 0;
+  border: none;
+  padding: var(--text-padding-y) var(--text-padding-x);
+  border-radius: var(--border-radius);
+  background: var(--variant-dark);
+  color: var(--bg-white);
+  font-family: var(--font-family);
+  font-size: var(--font-size-text);
+  cursor: pointer;
+  transition: background-color var(--animation-duration), opacity var(--animation-duration);
+
+  &:hover {
+    background-color: var(--variant-light);
   }
 
   &:active {

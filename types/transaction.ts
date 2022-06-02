@@ -1,6 +1,7 @@
 import { IsNumber, IsObject, IsString, IsType } from "@paulpopat/safe-type";
 import { IsCategory } from "./category";
 import { IsPerson } from "./person";
+import { IsDateObject } from "./utility";
 
 export const IsTransaction = IsObject({
   id: IsString,
@@ -8,7 +9,7 @@ export const IsTransaction = IsObject({
   category: IsString,
   description: IsString,
   amount: IsNumber,
-  when: IsObject({ day: IsNumber, month: IsNumber, year: IsNumber }),
+  when: IsDateObject,
 });
 
 export const IsCompleteTransaction = IsObject({
@@ -17,7 +18,7 @@ export const IsCompleteTransaction = IsObject({
   category: IsCategory,
   description: IsString,
   amount: IsNumber,
-  when: IsObject({ day: IsNumber, month: IsNumber, year: IsNumber }),
+  when: IsDateObject,
 });
 
 export type Transaction = IsType<typeof IsTransaction>;
