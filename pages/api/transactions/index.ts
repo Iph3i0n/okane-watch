@@ -3,7 +3,7 @@ import { Add, GetTransactions } from "../../../repositories/transaction";
 import { BuildApi } from "../../../utils/api";
 
 const IsPost = IsObject({
-  user: IsString,
+  person: IsString,
   category: IsString,
   description: IsString,
   amount: IsNumber,

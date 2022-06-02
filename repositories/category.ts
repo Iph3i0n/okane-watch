@@ -3,19 +3,10 @@ import { v4 as Guid } from "uuid";
 import { Assert, IsArray, IsTuple } from "@paulpopat/safe-type";
 import { Category, IsCategory } from "$types/category";
 
-export async function Init() {
-  const db = await GetDb();
-  await db.Run(`CREATE TABLE IF NOT EXISTS categories (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    budget REAL NOT NULL
-  ) WITHOUT ROWID`);
-}
-
 export async function GetAll() {
   const db = await GetDb();
 
-  const rows = await db.All(`SELECT id, name, budget FROM categories`);
+  const rows = await db.Query(`SELECT id, name, budget FROM categories`);
   Assert(IsArray(IsCategory), rows);
   return rows;
 }
@@ -23,10 +14,11 @@ export async function GetAll() {
 export async function Get(id: string) {
   const db = await GetDb();
 
-  const rows = await db.All(
-    `SELECT id, name, budget FROM categories WHERE id = $id`,
-    { $id: id }
+  const rows = await db.Query(
+    `SELECT id, name, budget FROM categories WHERE id = $1`,
+    id
   );
+  await db.End();
   Assert(IsTuple(IsCategory), rows);
   return rows[0];
 }
@@ -35,28 +27,29 @@ export async function Add(name: string, budget: number) {
   const id = Guid();
   const db = await GetDb();
 
-  await db.Run(`INSERT INTO categories VALUES ($id, $name, $budget)`, {
-    $id: id,
-    $name: name,
-    $budget: budget,
-  });
+  await db.Query(
+    `INSERT INTO categories(id, name, budget) VALUES ($1, $2, $3)`,
+    id,
+    name,
+    budget
+  );
 
+  await db.End();
   return id;
 }
 
 export async function Update(id: string, subject: Omit<Category, "id">) {
   const db = await GetDb();
-  await db.Run(
+  await db.Query(
     `UPDATE categories
-     SET name = $name,
-         budget = $budget
-     WHERE id = $id`,
-    {
-      $id: id,
-      $name: subject.name,
-      $budget: subject.budget,
-    }
+     SET name = $2,
+         budget = $3
+     WHERE id = $1`,
+    id,
+    subject.name,
+    subject.budget
   );
 
+  await db.End();
   return id;
 }

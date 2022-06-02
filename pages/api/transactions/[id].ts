@@ -7,7 +7,7 @@ const IsQuery = IsObject({
 });
 
 const IsPutBody = IsObject({
-  user: IsString,
+  person: IsString,
   category: IsString,
   description: IsString,
   amount: IsNumber,

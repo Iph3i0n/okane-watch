@@ -22,14 +22,14 @@ const Table = TableFor(IsCompleteTransaction);
 const Form = FormFor(
   IsObject({
     when: IsDateObject,
-    user: IsString,
+    person: IsString,
     description: IsString,
     category: IsString,
     amount: IsNumber,
   }),
   {
     when: { day: Day, month: Month, year: Year },
-    user: "",
+    person: "",
     description: "",
     category: "",
     amount: 0,
@@ -39,7 +39,7 @@ const Form = FormFor(
 async function GetFullTransaction(transaction: Transaction) {
   return {
     ...transaction,
-    user: await ApiClient.People.Get({ id: transaction.user }),
+    person: await ApiClient.People.Get({ id: transaction.person }),
     category: await ApiClient.Categories.Get({ id: transaction.category }),
   };
 }
@@ -83,7 +83,7 @@ export default CreatePage(
               {(row) => (
                 <>
                   <td>{ToDateString(row.when)}</td>
-                  <td>{row.user.name}</td>
+                  <td>{row.person.name}</td>
                   <td>{row.description}</td>
                   <td>{row.category.name}</td>
                   <td>{ToCurrencyString(row.amount)}</td>
@@ -94,7 +94,7 @@ export default CreatePage(
                         set_current(row.id);
                         set_form_value({
                           when: row.when,
-                          user: row.user.id,
+                          person: row.person.id,
                           description: row.description,
                           category: row.category.id,
                           amount: row.amount,
@@ -155,7 +155,7 @@ export default CreatePage(
           >
             <Form.TextInput name="description">Description</Form.TextInput>
             <Form.DatePicker name="when">When</Form.DatePicker>
-            <Form.Select name="user" label="Person">
+            <Form.Select name="person" label="Person">
               {props.people.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}

@@ -1,3 +1,4 @@
+import { IsDateObject } from "$types/utility";
 import Api from "@paulpopat/api-interface";
 import {
   IsArray,
@@ -23,11 +24,11 @@ const ApiClient = Api(
         method: "POST",
         url: "/api/transactions",
         body: IsObject({
-          user: IsString,
+          person: IsString,
           category: IsString,
           description: IsString,
           amount: IsNumber,
-          when: IsObject({ day: IsNumber, month: IsNumber, year: IsNumber }),
+          when: IsDateObject,
         }),
         returns: IsTransaction,
       },
@@ -36,11 +37,11 @@ const ApiClient = Api(
         url: "/api/transactions/:id",
         parameters: { id: IsString },
         body: IsObject({
-          user: IsString,
+          person: IsString,
           category: IsString,
           description: IsString,
           amount: IsNumber,
-          when: IsObject({ day: IsNumber, month: IsNumber, year: IsNumber }),
+          when: IsDateObject,
         }),
         returns: IsTransaction,
       },

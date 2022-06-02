@@ -4,6 +4,7 @@ import Next from "next";
 import Path from "path";
 import Fs from "fs-extra";
 import Dotenv from "dotenv";
+import { GetDb } from "$services/database";
 
 Dotenv.config();
 
@@ -14,10 +15,15 @@ const app = Next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
 (async () => {
-  const repositories_base = Path.join(__dirname, "repositories");
-  for (const file of await Fs.readdir(repositories_base)) {
-    await require(Path.join(repositories_base, file)).Init();
+  const db = await GetDb();
+  const update_scripts_base = Path.join(__dirname, "update-scripts");
+  for (const file of await Fs.readdir(update_scripts_base)) {
+    const loc = Path.join(update_scripts_base, file);
+    const data = await Fs.readFile(loc, "utf-8");
+    await db.Query(data);
   }
+
+  await db.End();
 
   await app.prepare();
   CreateServer(async (req, res) => {

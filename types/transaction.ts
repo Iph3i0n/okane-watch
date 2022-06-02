@@ -5,7 +5,7 @@ import { IsDateObject } from "./utility";
 
 export const IsTransaction = IsObject({
   id: IsString,
-  user: IsString,
+  person: IsString,
   category: IsString,
   description: IsString,
   amount: IsNumber,
@@ -14,7 +14,7 @@ export const IsTransaction = IsObject({
 
 export const IsCompleteTransaction = IsObject({
   id: IsString,
-  user: IsPerson,
+  person: IsPerson,
   category: IsCategory,
   description: IsString,
   amount: IsNumber,

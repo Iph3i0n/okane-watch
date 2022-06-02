@@ -1,41 +1,27 @@
-import Sqlite3 from "sqlite3";
-import Path from "path";
-import Fs from "fs-extra";
-
-let cache: Sqlite3.Database;
+import { Client } from "pg";
 
 export async function GetDb() {
-  const db = await new Promise<Sqlite3.Database>(async (res, rej) => {
-    if (cache) res(cache);
-    else {
-      const dir = Path.dirname(process.env.SQL_DB_LOCATION);
-      if (!(await Fs.pathExists(dir))) {
-        await Fs.mkdirp(dir);
-      }
-
-      cache = new Sqlite3.Database(process.env.SQL_DB_LOCATION, (err) => {
-        if (err) rej(err);
-        else res(cache);
-      });
-    }
+  const db = new Client({
+    user: process.env.DB_USER,
+    database: process.env.DB_DATABASE,
+    password: process.env.DB_PASSWORD,
+    port: parseInt(process.env.DB_PORT),
+    host: process.env.DB_HOST,
+    keepAlive: true,
   });
+  await db.connect();
 
   return {
-    Run(sql: string, params?: any) {
-      return new Promise<Sqlite3.RunResult>((res, rej) => {
-        db.run(sql, params, function (err) {
+    Query(sql: string, ...params: any[]) {
+      return new Promise<any[]>((res, rej) => {
+        db.query(sql, params, function (err, final) {
           if (err) rej(err);
-          res(this);
+          else res(final.rows);
         });
       });
     },
-    All(sql: string, params?: any) {
-      return new Promise<unknown[]>((res, rej) => {
-        db.all(sql, params, function (err, rows) {
-          if (err) rej(err);
-          res(rows);
-        });
-      });
+    End() {
+      return db.end();
     },
   };
 }
