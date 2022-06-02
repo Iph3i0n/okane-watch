@@ -3,14 +3,26 @@
 :root {
   --font-family: "Poppins", sans-serif;
 
+  --rainbow-1: #f94144;
+  --rainbow-2: #f3722c;
+  --rainbow-3: #f8961e;
+  --rainbow-4: #f9844a;
+  --rainbow-5: #f9c74f;
+  --rainbow-6: #90be6d;
+  --rainbow-7: #43aa8b;
+  --rainbow-8: #4d908e;
+  --rainbow-9: #577590;
+  --rainbow-0: #277da1;
+
   --body: #222;
   --bg-white: #fff;
   --bg-surface: #f7f7f7;
-  --theme-dark: #0061ff;
-  --theme-light: #e81cff;
 
-  --variant-dark: #40c9ff;
-  --variant-light: #60efff;
+  --theme-dark: var(--rainbow-9);
+  --theme-light: var(--rainbow-0);
+
+  --variant-dark: var(--rainbow-7);
+  --variant-light: var(--rainbow-8);
 
   --border-radius: 0.5rem;
 

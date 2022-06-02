@@ -30,6 +30,7 @@
     "react": "^18.1.0",
     "react-datepicker": "^4.8.0",
     "react-dom": "^18.1.0",
+    "recharts": "^2.1.10",
     "styled-components": "^5.3.5",
     "tsconfig-paths": "^4.0.0",
     "uuid": "^8.3.2",

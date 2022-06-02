@@ -23,7 +23,7 @@ export async function Execute(slug: string, parameters: PossibleParameters) {
   }
 
   const query = await Fs.readFile(
-    Path.join(__dirname, "..", "queries", slug + ".sql"),
+    Path.join(".", "queries", slug + ".sql"),
     "utf-8"
   );
   const db = await GetDb();

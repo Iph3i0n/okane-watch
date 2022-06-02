@@ -18,6 +18,10 @@ const Table = Styled.table`
     background: var(--bg-surface);
   }
 
+  tbody tr:nth-child(odd) {
+    background: var(--bg-white);
+  }
+
   th, td {
     padding: var(--text-padding-y) var(--text-padding-x);
   }
