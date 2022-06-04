@@ -1,4 +1,4 @@
-import type { AppProps } from "next/app";
+import App from "next/app";
 import Head from "next/head";
 import Link from "next/link";
 import Styled from "styled-components";
@@ -35,25 +35,27 @@ const Header = Styled.header`
   }
 `;
 
-export default function MyApp({ Component, pageProps }: AppProps) {
-  return (
-    <>
-      <Head>
-        <title>Okane Watch</title>
-      </Head>
-      <Header>
+export default class MyApp extends App {
+  render() {
+    return (
+      <>
+        <Head>
+          <title>Okane Watch</title>
+        </Head>
+        <Header>
+          <Container>
+            <b>Okane Watch</b>
+            <nav>
+              <Link href="/">Overview</Link>
+              <Link href="/transactions">Transactions</Link>
+              <Link href="/people">People</Link>
+            </nav>
+          </Container>
+        </Header>
         <Container>
-          <b>Okane Watch</b>
-          <nav>
-            <Link href="/">Overview</Link>
-            <Link href="/transactions">Transactions</Link>
-            <Link href="/people">People</Link>
-          </nav>
+          <this.props.Component {...this.props.pageProps} />
         </Container>
-      </Header>
-      <Container>
-        <Component {...pageProps} />
-      </Container>
-    </>
-  );
+      </>
+    );
+  }
 }

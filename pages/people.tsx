@@ -12,7 +12,10 @@ import { IsObject, IsString } from "@paulpopat/safe-type";
 
 const Table = TableFor(IsPerson);
 
-const Form = FormFor(IsObject({ name: IsString }), { name: "" });
+const Form = FormFor(IsObject({ name: IsString, password: IsString }), {
+  name: "",
+  password: "",
+});
 
 export default CreatePage(
   async (ctx) => {
@@ -46,7 +49,7 @@ export default CreatePage(
                       type="button"
                       onClick={() => {
                         set_current(row.id);
-                        set_form_value({ name: row.name });
+                        set_form_value({ name: row.name, password: "" });
                         set_editing(true);
                       }}
                     >
@@ -92,6 +95,7 @@ export default CreatePage(
             }}
           >
             <Form.TextInput name="name">Name</Form.TextInput>
+            <Form.PasswordInput name="password">Password</Form.PasswordInput>
             <ThemeButton type="submit">Submit</ThemeButton>
           </Form>
         </Modal>

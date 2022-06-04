@@ -1,5 +1,5 @@
 import { GetDb } from "$services/database";
-import { IsPermission } from "$types/permission";
+import { IsPermission, PermissionName } from "$types/permission";
 import { Assert, IsObject, IsString, IsArray } from "@paulpopat/safe-type";
 import { v4 as Guid } from "uuid";
 
@@ -11,7 +11,7 @@ export async function GetUserPermissions(user_id: string) {
     SELECT p.name
     FROM people_permissions a
       INNER JOIN permissions p ON a.permission = p.id
-    WHERE a.id = $1`,
+    WHERE a.person = $1`,
     user_id
   );
 
@@ -28,6 +28,22 @@ export async function GetAll() {
 
   Assert(IsArray(IsPermission), rows);
   return rows;
+}
+
+export async function AddPermission(level: number, name: PermissionName) {
+  const id = Guid();
+
+  const db = await GetDb();
+
+  await db.Query(
+    `INSERT INTO permissions(id, level, name) VALUES ($1, $2, $3)`,
+    id,
+    level,
+    name
+  );
+
+  await db.End();
+  return id;
 }
 
 export async function AddForUser(user_id: string, permission_id: string) {

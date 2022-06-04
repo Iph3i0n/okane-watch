@@ -18,3 +18,5 @@ if (NextMonthObject.month > 12) {
   LastMonthObject.month = 1;
   LastMonthObject.year += 1;
 }
+
+export const AuthTokenKey = "auth-token";

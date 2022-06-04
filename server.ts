@@ -7,7 +7,7 @@ import Dotenv from "dotenv";
 import { GetDb } from "$services/database";
 import * as People from "$repositories/person";
 import * as Permissions from "$repositories/permissions";
-import { OnlyUnique } from "$utils/array";
+import { PermissionOptions } from "$types/permission";
 
 Dotenv.config();
 
@@ -49,9 +49,18 @@ async function AddAdmin() {
     await Permissions.AddForUser(id, permission.id);
 }
 
+async function AddAllPermissions() {
+  const check = (await Permissions.GetAll()).map((p) => p.name);
+
+  for (const permission of PermissionOptions)
+    if (!check.includes(permission))
+      await Permissions.AddPermission(0, permission);
+}
+
 (async () => {
   await RunMigrations();
   if (await ShouldAddAdmin()) await AddAdmin();
+  await AddAllPermissions();
 
   await app.prepare();
   CreateServer(async (req, res) => {

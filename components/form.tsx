@@ -112,6 +112,20 @@ export default function FormFor<T extends Record<string, any>>(
           </Label>
         );
       }) as React.C<{ name: keyof T }>,
+      PasswordInput: (({ children, name }) => {
+        const { get, set } = React.useContext(Context);
+
+        return (
+          <Label>
+            {children}
+            <Input
+              type="password"
+              value={get(name)}
+              onChange={(e) => set(name, e.currentTarget.value as any)}
+            />
+          </Label>
+        );
+      }) as React.C<{ name: keyof T }>,
       NumberInput: (({ children, name, max, min, decimal_places }) => {
         const { get, set } = React.useContext(Context);
         const places = decimal_places ?? 1000;

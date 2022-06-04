@@ -67,15 +67,24 @@ export async function Add(name: string, password: string) {
   return id;
 }
 
-export async function Update(id: string, subject: Omit<Person, "id">) {
+export async function Update(id: string, name: string, password: string) {
   const db = await GetDb();
   await db.Query(
     `UPDATE people
      SET name = $2
      WHERE id = $1`,
     id,
-    subject.name
+    name
   );
+
+  if (password)
+    await db.Query(
+      `UPDATE people
+       SET password = $2
+       WHERE id = $1`,
+      id,
+      await Encrypt(password)
+    );
 
   await db.End();
   return id;

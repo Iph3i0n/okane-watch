@@ -9,7 +9,6 @@
     ".next": true,
     ".vscode": true,
     "node_modules": true,
-    "resources": true,
     "next-env.d.ts": true,
     ".gitignore": true,
     "tsconfig.json": true,

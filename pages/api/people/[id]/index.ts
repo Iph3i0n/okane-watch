@@ -1,4 +1,4 @@
-import { Assert, IsObject, IsString } from "@paulpopat/safe-type";
+import { Assert, IsObject, IsString, Optional } from "@paulpopat/safe-type";
 import { Get, Update } from "$repositories/person";
 import { BuildApi } from "$utils/api";
 
@@ -8,6 +8,7 @@ const IsQuery = IsObject({
 
 const IsPutBody = IsObject({
   name: IsString,
+  password: Optional(IsString),
 });
 
 export default BuildApi({
@@ -29,13 +30,10 @@ export default BuildApi({
       Assert(IsQuery, query);
       const body = req.body;
       Assert(IsPutBody, body);
-      const id = await Update(query.id, { ...body });
+      const id = await Update(query.id, body.name, body.password);
       return {
         status: 200,
-        body: {
-          ...body,
-          id,
-        },
+        body: await Get(id),
       };
     },
   },

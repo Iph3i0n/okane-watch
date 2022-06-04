@@ -4,22 +4,23 @@ import { BuildApi } from "$utils/api";
 import { Generate } from "$services/jwt";
 
 const IsQuery = IsObject({
-  name: IsString,
+  id: IsString,
   password: IsString,
 });
 
 export default BuildApi({
   GET: {
-    require: "view",
     proc: async (req) => {
       const query = req.query;
       Assert(IsQuery, query);
-      if (await IsCorrectPassword(query.name, query.password)) {
+      if (await IsCorrectPassword(query.id, query.password)) {
         return {
           status: 200,
-          body: { token: await Generate(await GetByName(query.name)) },
+          body: { token: await Generate(await GetByName(query.id)) },
         };
       }
+
+      return { status: 401 };
     },
   },
 });

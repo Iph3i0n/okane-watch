@@ -1,5 +1,7 @@
 import { Can } from "$services/jwt";
+import { PermissionName } from "$types/permission";
 import { NextApiRequest, NextApiResponse } from "next";
+import { GetJwt } from "./request";
 
 type ApiResponse = {
   status: number;
@@ -8,7 +10,7 @@ type ApiResponse = {
 };
 
 type ApiHandler = {
-  require?: string;
+  require?: PermissionName;
   proc: (request: NextApiRequest) => Promise<ApiResponse>;
 };
 
@@ -21,11 +23,8 @@ export function BuildApi(handlers: Api) {
     if (!handler) return res.status(404).send(undefined);
 
     if (handler.require) {
-      const head = req.headers.authorization;
-      if (!head || !head.match(/Bearer .+/gm))
-        return res.status(401).send(undefined);
-
-      const jwt = head.replace("Bearer ", "");
+      const jwt = GetJwt(req.headers);
+      if (!jwt) return res.status(401).send(undefined);
       if (!(await Can(jwt, handler.require)))
         return res.status(401).send(undefined);
     }

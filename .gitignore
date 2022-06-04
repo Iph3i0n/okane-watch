@@ -1,6 +1,5 @@
 node_modules
 .next
-resources
 dist
 **/.DS_Store
 .env

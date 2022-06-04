@@ -5,9 +5,9 @@ export function Generate(user_id: string) {
   return new Promise<string>(async (res, rej) => {
     const permissions = await GetUserPermissions(user_id);
     Jwt.sign(
-      permissions,
+      { permissions },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" },
+      { expiresIn: 60 * 30 },
       (err, token) => {
         if (err) rej(err);
         else res(token);
@@ -18,13 +18,26 @@ export function Generate(user_id: string) {
 
 export function Can(token: string, check: string) {
   return new Promise<boolean>((res, rej) => {
-    Jwt.verify(token, process.env.JWT_SECRET, (err, permissions) => {
+    Jwt.verify(token, process.env.JWT_SECRET, (err, payload: any) => {
       if (err) {
         rej(err);
         return;
       }
 
-      res(permissions.includes(check));
+      res(payload.permissions.includes(check));
+    });
+  });
+}
+
+export function Permissions(token: string) {
+  return new Promise<string[]>((res, rej) => {
+    Jwt.verify(token, process.env.JWT_SECRET, (err, payload: any) => {
+      if (err) {
+        rej(err);
+        return;
+      }
+
+      res(payload.permissions);
     });
   });
 }

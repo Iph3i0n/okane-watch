@@ -12,12 +12,9 @@ import {
 import { IsCategory } from "../types/category";
 import { IsPerson } from "../types/person";
 import { IsTransaction } from "../types/transaction";
-
-let token: string;
-
-export function SetToken(t: string) {
-  token = t;
-}
+import { getCookie } from "cookies-next";
+import { AuthTokenKey } from "$utils/constants";
+import { GetAuth } from "$utils/cookies";
 
 const ApiClient = Api(
   {
@@ -75,19 +72,19 @@ const ApiClient = Api(
       Add: {
         method: "POST",
         url: "/api/people",
-        body: IsObject({ name: IsString }),
+        body: IsObject({ name: IsString, password: IsString }),
         returns: IsPerson,
       },
       Update: {
         method: "PUT",
         url: "/api/people/:id",
         parameters: { id: IsString },
-        body: IsObject({ name: IsString }),
+        body: IsObject({ name: IsString, password: IsString }),
         returns: IsPerson,
       },
       Login: {
         method: "GET",
-        url: "/api/people/:id/auth-token",
+        url: "/api/people/:name/auth-token",
         parameters: { name: IsString, password: IsString },
         returns: IsObject({ token: IsString }),
       },
@@ -145,8 +142,8 @@ const ApiClient = Api(
     },
     AuthCheck: {
       method: "GET",
-      url: "/api/auth",
-      returns: DoNotCare,
+      url: "/api/permissions",
+      returns: IsArray(IsString),
     },
   },
   {
@@ -154,12 +151,13 @@ const ApiClient = Api(
     middleware: async (v) => {
       console.log(`Sending ${v.method} to ${v.url}`);
 
-      if (token) {
+      const cookie = GetAuth();
+      if (cookie) {
         return {
           ...v,
           headers: {
             ...v.headers,
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${cookie}`,
           },
         };
       }
