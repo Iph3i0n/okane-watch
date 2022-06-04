@@ -6,8 +6,8 @@
   "main": "./dist/server.js",
   "scripts": {
     "dev": "ts-node --project tsconfig.server.json ./server.ts",
-    "build": "tsc --project tsconfig.server.json && next build",
-    "start": "node -r tsconfig-paths/register .",
+    "build": "next build",
+    "start": "NODE_ENV=production ts-node --project tsconfig.server.json ./server.ts",
     "lint": "next lint"
   },
   "repository": {

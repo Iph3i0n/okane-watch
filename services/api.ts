@@ -153,10 +153,8 @@ const ApiClient = Api(
     },
   },
   {
-    base: process.env.NEXT_PUBLIC_SITE_URL,
+    base: process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL,
     middleware: async (v) => {
-      console.log(`Sending ${v.method} to ${v.url}`);
-
       const cookie = GetAuth();
       if (cookie) {
         return {

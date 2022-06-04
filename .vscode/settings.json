@@ -16,6 +16,7 @@
     "package-lock.json": true,
     "dist": true,
     ".env": true,
-    ".babelrc": true
+    ".babelrc": true,
+    ".dockerignore": true
   }
 }

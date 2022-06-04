@@ -7,10 +7,9 @@ import { IsObject, IsString } from "@paulpopat/safe-type";
 import ApiClient from "$services/api";
 import { useRouter } from "next/router";
 import { H1 } from "$components/text";
-import { setCookies } from "cookies-next";
-import { AuthTokenKey } from "$utils/constants";
 import { SetAuth } from "$utils/cookies";
 import { UseUiText } from "$contexts/uitext";
+import { WarningRow } from "$components/warning";
 
 const Form = FormFor(IsObject({ name: IsString, password: IsString }), {
   name: "",
@@ -25,17 +24,24 @@ export default CreatePage(
     const router = useRouter();
     const uitext = UseUiText();
     const [form, set_form] = React.useState(Form.default_value);
+    const [error, set_error] = React.useState("");
 
     return (
       <Form
         value={form}
         on_change={set_form}
         on_submit={async (v) => {
-          const res = await ApiClient.People.Login(v);
-          SetAuth(res.token);
-          router.push("/");
+          set_error("");
+          try {
+            const res = await ApiClient.People.Login(v);
+            SetAuth(res.token);
+            router.push("/");
+          } catch {
+            set_error("Login failed. Please check your details and try again.");
+          }
         }}
       >
+        {error && <WarningRow>{error}</WarningRow>}
         <Row>
           <Col xs="12">
             <H1>{uitext.login}</H1>

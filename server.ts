@@ -19,7 +19,7 @@ const handle = app.getRequestHandler();
 
 async function RunMigrations() {
   const db = await GetDb();
-  const update_scripts_base = Path.join(__dirname, "update-scripts");
+  const update_scripts_base = Path.join(".", "update-scripts");
   for (const file of await Fs.readdir(update_scripts_base)) {
     const loc = Path.join(update_scripts_base, file);
     const data = await Fs.readFile(loc, "utf-8");
@@ -39,6 +39,9 @@ async function ShouldAddAdmin() {
 }
 
 async function AddAdmin() {
+  console.log(
+    "No user admin detected. Creating one using defaults from environment variables."
+  );
   const id = await People.Add(
     process.env.ADMIN_USERNAME,
     process.env.ADMIN_PASSWORD
@@ -59,8 +62,8 @@ async function AddAllPermissions() {
 
 (async () => {
   await RunMigrations();
-  if (await ShouldAddAdmin()) await AddAdmin();
   await AddAllPermissions();
+  if (await ShouldAddAdmin()) await AddAdmin();
 
   await app.prepare();
   CreateServer(async (req, res) => {

@@ -25,6 +25,8 @@
   --variant-dark: var(--rainbow-7);
   --variant-light: var(--rainbow-8);
 
+  --error: var(--rainbow-1);
+
   --border-radius: 0.5rem;
 
   --block-padding: 1rem;
@@ -56,7 +58,7 @@
     --body: #f7f7f7;
     --white: #fff;
     --bg-white: #242424;
-    --bg-surface: #444;
+    --bg-surface: #2e2d2d;
   }
 }
 

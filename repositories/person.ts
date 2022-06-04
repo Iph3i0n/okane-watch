@@ -7,7 +7,7 @@ import {
   IsString,
   IsTuple,
 } from "@paulpopat/safe-type";
-import { IsPerson, Person } from "$types/person";
+import { IsPerson } from "$types/person";
 import BCrypt from "bcrypt";
 
 export function Encrypt(data: string) {
