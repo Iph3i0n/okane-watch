@@ -147,7 +147,14 @@ export default CreatePage(
                   </Table.Row>
                 </tbody>
               </Table>
-              <ThemeButton type="button" onClick={() => set_editing(true)}>
+              <ThemeButton
+                type="button"
+                onClick={() => {
+                  set_editing(true);
+                  set_current("");
+                  set_form_value(Form.default_value);
+                }}
+              >
                 {uitext.add}
               </ThemeButton>
             </Card>

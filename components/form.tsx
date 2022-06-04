@@ -226,7 +226,7 @@ export default function FormFor<T extends Record<string, any>>(
               }
               max={max}
               min={min}
-              inputMode="decimal"
+              step="0.01"
             />
           </Label>
         );
