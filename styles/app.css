@@ -19,6 +19,8 @@
   --bg-white: #fff;
   --bg-surface: #f7f7f7;
 
+  --box-shadow-colour: rgba(34, 34, 34, 0.2);
+
   --theme-dark: var(--rainbow-9);
   --theme-light: var(--rainbow-0);
 
@@ -51,6 +53,8 @@
 
   --modal-width: 800px;
   --modal-height: 500px;
+
+  --box-shadow: 0 0 40px var(--box-shadow-colour);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -59,6 +63,7 @@
     --white: #fff;
     --bg-white: #242424;
     --bg-surface: #2e2d2d;
+    --box-shadow-colour: rgba(174, 174, 174, 0.2);
   }
 }
 
