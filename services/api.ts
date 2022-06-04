@@ -8,6 +8,7 @@ import {
   IsNumber,
   DoNotCare,
   Optional,
+  IsBoolean,
 } from "@paulpopat/safe-type";
 import { IsCategory } from "../types/category";
 import { IsPerson } from "../types/person";
@@ -72,15 +73,29 @@ const ApiClient = Api(
       Add: {
         method: "POST",
         url: "/api/people",
-        body: IsObject({ name: IsString, password: IsString }),
+        body: IsObject({
+          name: IsString,
+          password: IsString,
+          is_admin: IsBoolean,
+        }),
         returns: IsPerson,
       },
       Update: {
         method: "PUT",
         url: "/api/people/:id",
         parameters: { id: IsString },
-        body: IsObject({ name: IsString, password: IsString }),
+        body: IsObject({
+          name: IsString,
+          password: IsString,
+          is_admin: IsBoolean,
+        }),
         returns: IsPerson,
+      },
+      IsAdmin: {
+        method: "GET",
+        url: "/api/people/:id/is-admin",
+        parameters: { id: IsString },
+        returns: IsObject({ is_admin: IsBoolean }),
       },
       Login: {
         method: "GET",

@@ -25,5 +25,7 @@
   "delete_transaction": "Are you sure you wish to delete this transaction?",
   "delete": "Delete",
   "cancel": "Cancel",
-  "are_you_sure": "Are you sure?"
+  "are_you_sure": "Are you sure?",
+  "admin": "Admin",
+  "pick_one": "Pick One"
 }

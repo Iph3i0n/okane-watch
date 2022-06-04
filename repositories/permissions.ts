@@ -61,3 +61,15 @@ export async function AddForUser(user_id: string, permission_id: string) {
   await db.End();
   return id;
 }
+
+export async function RemoveForUser(user_id: string, permission_id: string) {
+  const db = await GetDb();
+
+  await db.Query(
+    `DELETE FROM people_permissions WHERE person = $1 AND permission = $2`,
+    user_id,
+    permission_id
+  );
+
+  await db.End();
+}

@@ -4,6 +4,7 @@ import Styled from "styled-components";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { DateObject, FromJsDate, IsDateObject, ToJsDate } from "$types/utility";
+import { UseUiText } from "$contexts/uitext";
 
 const Form = Styled.form`
   display: grid;
@@ -177,6 +178,7 @@ export default function FormFor<T extends Record<string, any>>(
       }>,
       Select: (({ label, children, name }) => {
         const { get, set } = React.useContext(Context);
+        const uitext = UseUiText();
 
         return (
           <Label>
@@ -186,7 +188,7 @@ export default function FormFor<T extends Record<string, any>>(
               onChange={(e) => set(name, e.currentTarget.value as any)}
             >
               <option disabled value="">
-                Pick One
+                {uitext.pick_one}
               </option>
               {children}
             </Select>
@@ -203,6 +205,20 @@ export default function FormFor<T extends Record<string, any>>(
           <SelectDate date={value} set_date={(v) => set(name, v as any)}>
             {children}
           </SelectDate>
+        );
+      }) as React.C<{ name: keyof T }>,
+      Checkbox: (({ children, name }) => {
+        const { get, set } = React.useContext(Context);
+
+        return (
+          <Label>
+            {children}
+            <Input
+              type="checkbox"
+              checked={get(name)}
+              onChange={(e) => set(name, e.currentTarget.checked as any)}
+            />
+          </Label>
         );
       }) as React.C<{ name: keyof T }>,
       default_value,

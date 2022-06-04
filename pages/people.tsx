@@ -8,15 +8,19 @@ import ApiClient from "$services/api";
 import CreatePage from "$services/page";
 import { IsPerson } from "$types/person";
 import FormFor from "$components/form";
-import { IsObject, IsString } from "@paulpopat/safe-type";
+import { IsBoolean, IsObject, IsString } from "@paulpopat/safe-type";
 import { UseUiText } from "$contexts/uitext";
 
 const Table = TableFor(IsPerson);
 
-const Form = FormFor(IsObject({ name: IsString, password: IsString }), {
-  name: "",
-  password: "",
-});
+const Form = FormFor(
+  IsObject({ name: IsString, password: IsString, is_admin: IsBoolean }),
+  {
+    name: "",
+    password: "",
+    is_admin: false,
+  }
+);
 
 export default CreatePage(
   async (ctx) => {
@@ -49,9 +53,15 @@ export default CreatePage(
                   <td>
                     <InvisibleButton
                       type="button"
-                      onClick={() => {
+                      onClick={async () => {
                         set_current(row.id);
-                        set_form_value({ name: row.name, password: "" });
+                        set_form_value({
+                          name: row.name,
+                          password: "",
+                          is_admin: (
+                            await ApiClient.People.IsAdmin({ id: row.id })
+                          ).is_admin,
+                        });
                         set_editing(true);
                       }}
                     >
@@ -63,7 +73,14 @@ export default CreatePage(
             </Table.Row>
           </tbody>
         </Table>
-        <ThemeButton type="button" onClick={() => set_editing(true)}>
+        <ThemeButton
+          type="button"
+          onClick={() => {
+            set_editing(true);
+            set_current("");
+            set_form_value(Form.default_value);
+          }}
+        >
           {uitext.add}
         </ThemeButton>
         <Modal
@@ -100,6 +117,7 @@ export default CreatePage(
             <Form.PasswordInput name="password">
               {uitext.password}
             </Form.PasswordInput>
+            <Form.Checkbox name="is_admin">{uitext.admin}</Form.Checkbox>
             <ThemeButton type="submit">{uitext.submit}</ThemeButton>
           </Form>
         </Modal>

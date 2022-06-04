@@ -1,10 +1,12 @@
-import { Assert, IsObject, IsString } from "@paulpopat/safe-type";
-import { Add, GetAll } from "$repositories/person";
+import { Assert, IsBoolean, IsObject, IsString } from "@paulpopat/safe-type";
+import { Add, Get, GetAll } from "$repositories/person";
 import { BuildApi } from "$utils/api";
+import { AddAllPermissionsForUser } from "$services/admin";
 
 const IsPost = IsObject({
   name: IsString,
   password: IsString,
+  is_admin: IsBoolean,
 });
 
 export default BuildApi({
@@ -14,12 +16,10 @@ export default BuildApi({
       const body = req.body;
       Assert(IsPost, body);
       const id = await Add(body.name, body.password);
+      if (body.is_admin) await AddAllPermissionsForUser(id);
       return {
         status: 201,
-        body: {
-          ...body,
-          id,
-        },
+        body: await Get(id),
       };
     },
   },
