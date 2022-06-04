@@ -9,6 +9,7 @@ import CreatePage from "$services/page";
 import { IsPerson } from "$types/person";
 import FormFor from "$components/form";
 import { IsObject, IsString } from "@paulpopat/safe-type";
+import { UseUiText } from "$contexts/uitext";
 
 const Table = TableFor(IsPerson);
 
@@ -24,6 +25,7 @@ export default CreatePage(
     };
   },
   (props) => {
+    const uitext = UseUiText();
     const [people, set_people] = React.useState(props.people);
     const [form_value, set_form_value] = React.useState(Form.default_value);
     const [editing, set_editing] = React.useState(false);
@@ -31,11 +33,11 @@ export default CreatePage(
 
     return (
       <>
-        <H1>Transactions</H1>
+        <H1>{uitext.transactions}</H1>
         <Table rows={people}>
           <thead>
             <tr>
-              <th>Name</th>
+              <th>{uitext.name}</th>
               <th></th>
             </tr>
           </thead>
@@ -62,7 +64,7 @@ export default CreatePage(
           </tbody>
         </Table>
         <ThemeButton type="button" onClick={() => set_editing(true)}>
-          Add
+          {uitext.add}
         </ThemeButton>
         <Modal
           title="Person"
@@ -94,9 +96,11 @@ export default CreatePage(
               set_editing(false);
             }}
           >
-            <Form.TextInput name="name">Name</Form.TextInput>
-            <Form.PasswordInput name="password">Password</Form.PasswordInput>
-            <ThemeButton type="submit">Submit</ThemeButton>
+            <Form.TextInput name="name">{uitext.name}</Form.TextInput>
+            <Form.PasswordInput name="password">
+              {uitext.password}
+            </Form.PasswordInput>
+            <ThemeButton type="submit">{uitext.submit}</ThemeButton>
           </Form>
         </Modal>
       </>

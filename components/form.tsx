@@ -3,7 +3,7 @@ import React from "react";
 import Styled from "styled-components";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { FromJsDate, IsDateObject, ToJsDate } from "$types/utility";
+import { DateObject, FromJsDate, IsDateObject, ToJsDate } from "$types/utility";
 
 const Form = Styled.form`
   display: grid;
@@ -24,6 +24,7 @@ const DatePickerLabel = Styled.label`
 
   input {
     flex: 1;
+    color: var(--body);
     font-family: var(--font-family);
     font-size: var(--font-size-text);
     font-weight: var(--font-weight-standard);
@@ -45,6 +46,7 @@ const Input = Styled.input`
   border-radius: var(--border-radius);
   margin-left: var(--block-padding);
   padding: var(--text-padding-y) var(--text-padding-x);
+  color: var(--body);
 `;
 
 const Select = Styled.select`
@@ -58,11 +60,28 @@ const Select = Styled.select`
   margin-left: var(--block-padding);
   padding: var(--text-padding-y) var(--text-padding-x);
   -webkit-appearance: none;
+  color: var(--body);
 `;
 
 type ContextObject<T extends Record<string, any>> = {
   get: <TKey extends keyof T>(key: TKey) => T[TKey];
   set: <TKey extends keyof T>(key: TKey, value: T[TKey]) => void;
+};
+
+export const SelectDate: React.C<{
+  date: DateObject;
+  set_date: (value: DateObject) => void;
+}> = ({ date, set_date, children }) => {
+  return (
+    <DatePickerLabel>
+      {children}
+      <DatePicker
+        selected={ToJsDate(date)}
+        onChange={(date) => set_date(FromJsDate(date))}
+        dateFormat="yyyy-MM-dd"
+      />
+    </DatePickerLabel>
+  );
 };
 
 export default function FormFor<T extends Record<string, any>>(
@@ -181,14 +200,9 @@ export default function FormFor<T extends Record<string, any>>(
         const final = ToJsDate(value);
 
         return (
-          <DatePickerLabel>
+          <SelectDate date={value} set_date={(v) => set(name, v as any)}>
             {children}
-            <DatePicker
-              selected={final}
-              onChange={(date) => set(name, FromJsDate(date) as any)}
-              dateFormat="yyyy-MM-dd"
-            />
-          </DatePickerLabel>
+          </SelectDate>
         );
       }) as React.C<{ name: keyof T }>,
       default_value,

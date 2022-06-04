@@ -9,7 +9,7 @@ export function OverrideOptions(options: OptionsType) {
 }
 
 export function GetAuth() {
-  return getCookie(AuthTokenKey, options_override).toString();
+  return getCookie(AuthTokenKey, options_override)?.toString();
 }
 
 export function SetAuth(value: string) {

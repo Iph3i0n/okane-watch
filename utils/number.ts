@@ -1,3 +1,3 @@
-export function ToCurrencyString(item: number) {
-  return item.toLocaleString("en-GB", { style: "currency", currency: "GBP" });
+export function ToCurrencyString(item: number, locale: string, label: string) {
+  return item.toLocaleString(locale, { style: "currency", currency: label });
 }

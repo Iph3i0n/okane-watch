@@ -15,6 +15,7 @@
   --rainbow-0: #277da1;
 
   --body: #222;
+  --white: #fff;
   --bg-white: #fff;
   --bg-surface: #f7f7f7;
 
@@ -48,6 +49,15 @@
 
   --modal-width: 800px;
   --modal-height: 500px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --body: #f7f7f7;
+    --white: #fff;
+    --bg-white: #242424;
+    --bg-surface: #444;
+  }
 }
 
 body {

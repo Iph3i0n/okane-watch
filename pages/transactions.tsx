@@ -1,5 +1,7 @@
 import FormFor from "$components/form";
+import { UseUiText } from "$contexts/uitext";
 import { IsDateObject, ToDateString } from "$types/utility";
+import { GetDateRange } from "$utils/date-range";
 import { IsNumber, IsObject, IsString } from "@paulpopat/safe-type";
 import React from "react";
 import {
@@ -14,13 +16,7 @@ import { H1 } from "../components/text";
 import ApiClient from "../services/api";
 import CreatePage from "../services/page";
 import { IsCompleteTransaction, Transaction } from "../types/transaction";
-import {
-  Year,
-  Month,
-  Day,
-  NowObject,
-  NextMonthObject,
-} from "../utils/constants";
+import { Year, Month, Day, ThisMonth, NextMonth } from "../utils/constants";
 import { ToCurrencyString } from "../utils/number";
 
 const Table = TableFor(IsCompleteTransaction);
@@ -52,10 +48,9 @@ async function GetFullTransaction(transaction: Transaction) {
 
 export default CreatePage(
   async (ctx) => {
-    const transactions = await ApiClient.Transactions.GetMonth({
-      from: ToDateString(NowObject),
-      to: ToDateString(NextMonthObject),
-    });
+    const transactions = await ApiClient.Transactions.GetMonth(
+      GetDateRange(ctx)
+    );
 
     return {
       transactions: await Promise.all(transactions.map(GetFullTransaction)),
@@ -64,6 +59,7 @@ export default CreatePage(
     };
   },
   (props) => {
+    const uitext = UseUiText();
     const [transactions, set_transactions] = React.useState(props.transactions);
     const [editing, set_editing] = React.useState(false);
     const [current, set_current] = React.useState("");
@@ -72,15 +68,15 @@ export default CreatePage(
 
     return (
       <>
-        <H1>Transactions</H1>
+        <H1>{uitext.transactions}</H1>
         <Table rows={transactions}>
           <thead>
             <tr>
-              <th>Date</th>
-              <th>Person</th>
-              <th>Description</th>
-              <th>Category</th>
-              <th>Amount</th>
+              <th>{uitext.date}</th>
+              <th>{uitext.person}</th>
+              <th>{uitext.description}</th>
+              <th>{uitext.category}</th>
+              <th>{uitext.amount}</th>
               <th></th>
             </tr>
           </thead>
@@ -92,7 +88,13 @@ export default CreatePage(
                   <td>{row.person.name}</td>
                   <td>{row.description}</td>
                   <td>{row.category.name}</td>
-                  <td>{ToCurrencyString(row.amount)}</td>
+                  <td>
+                    {ToCurrencyString(
+                      row.amount,
+                      uitext.locale,
+                      uitext.currency_label
+                    )}
+                  </td>
                   <td>
                     <InvisibleButton
                       type="button"
@@ -125,7 +127,7 @@ export default CreatePage(
           </tbody>
         </Table>
         <ThemeButton type="button" onClick={() => set_editing(true)}>
-          Add
+          {uitext.add}
         </ThemeButton>
         <Modal
           title="Transaction"
@@ -159,16 +161,18 @@ export default CreatePage(
               set_editing(false);
             }}
           >
-            <Form.TextInput name="description">Description</Form.TextInput>
-            <Form.DatePicker name="when">When</Form.DatePicker>
-            <Form.Select name="person" label="Person">
+            <Form.TextInput name="description">
+              {uitext.description}
+            </Form.TextInput>
+            <Form.DatePicker name="when">{uitext.when}</Form.DatePicker>
+            <Form.Select name="person" label={uitext.person}>
               {props.people.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}
                 </option>
               ))}
             </Form.Select>
-            <Form.Select name="category" label="Category">
+            <Form.Select name="category" label={uitext.category}>
               {props.categories.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}
@@ -176,18 +180,18 @@ export default CreatePage(
               ))}
             </Form.Select>
             <Form.NumberInput name="amount" min={0} decimal_places={2}>
-              Amount (£)
+              {uitext.amount} ({uitext.currency})
             </Form.NumberInput>
-            <ThemeButton type="submit">Submit</ThemeButton>
+            <ThemeButton type="submit">{uitext.submit}</ThemeButton>
           </Form>
         </Modal>
         <Modal
-          title="Are you sure?"
+          title={uitext.are_you_sure}
           open={!!deleting}
           on_close={() => set_deleting("")}
         >
           <p>
-            Are you sure you wish to delete this transaction?
+            {uitext.delete_transaction}
             <br />
             <small>
               {transactions.find((t) => t.id === deleting)?.description}
@@ -202,11 +206,11 @@ export default CreatePage(
                 set_deleting("");
               }}
             >
-              Delete
+              {uitext.delete}
             </ThemeButton>
             &nbsp;
             <VariantButton type="button" onClick={() => set_deleting("")}>
-              Cancel
+              {uitext.cancel}
             </VariantButton>
           </div>
         </Modal>

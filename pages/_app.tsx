@@ -1,4 +1,10 @@
-import App from "next/app";
+import { SelectDate } from "$components/form";
+import { UiTextProvider } from "$contexts/uitext";
+import ApiClient from "$services/api";
+import { DateObject, ToDateString } from "$types/utility";
+import { GetDateRangeObjects } from "$utils/date-range";
+import { UpdateQueryString } from "$utils/url";
+import App, { AppContext, AppInitialProps } from "next/app";
 import Head from "next/head";
 import Link from "next/link";
 import Styled from "styled-components";
@@ -17,7 +23,20 @@ const Header = Styled.header`
   }
 
   nav {
+    flex: 1;
     margin-left: 3rem;
+  }
+
+  .date-selector {
+    display: grid;
+    grid-template-columns: auto auto;
+    gap: var(--block-padding);
+
+    input {
+      flex: 0;
+      background: var(--bg-white);
+      max-width: 100px;
+    }
   }
 
   a {
@@ -35,27 +54,59 @@ const Header = Styled.header`
   }
 `;
 
-export default class MyApp extends App {
+type MyAppProps = AppInitialProps & {
+  range: { from: DateObject; to: DateObject };
+  uitext: any;
+};
+
+export default class MyApp extends App<MyAppProps> {
+  constructor(props: MyAppProps) {
+    super(props as any);
+  }
+
+  static async getInitialProps(app: AppContext): Promise<MyAppProps> {
+    const original = await App.getInitialProps(app);
+    return {
+      ...original,
+      range: GetDateRangeObjects(app.ctx),
+      uitext: await ApiClient.UiText({ locale: app.ctx.locale }),
+    };
+  }
+
   render() {
     return (
-      <>
+      <UiTextProvider uitext={this.props.uitext}>
         <Head>
-          <title>Okane Watch</title>
+          <title>{this.props.uitext.app_title}</title>
         </Head>
         <Header>
           <Container>
-            <b>Okane Watch</b>
+            <b>{this.props.uitext.app_title}</b>
             <nav>
-              <Link href="/">Overview</Link>
-              <Link href="/transactions">Transactions</Link>
-              <Link href="/people">People</Link>
+              <Link href="/">{this.props.uitext.overview}</Link>
+              <Link href="/transactions">{this.props.uitext.transactions}</Link>
+              <Link href="/people">{this.props.uitext.people}</Link>
             </nav>
+            <div className="date-selector">
+              <SelectDate
+                date={this.props.range.from}
+                set_date={(d) => UpdateQueryString("from", ToDateString(d))}
+              >
+                {this.props.uitext.from}
+              </SelectDate>
+              <SelectDate
+                date={this.props.range.to}
+                set_date={(d) => UpdateQueryString("to", ToDateString(d))}
+              >
+                {this.props.uitext.to}
+              </SelectDate>
+            </div>
           </Container>
         </Header>
         <Container>
           <this.props.Component {...this.props.pageProps} />
         </Container>
-      </>
+      </UiTextProvider>
     );
   }
 }

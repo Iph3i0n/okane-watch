@@ -30,7 +30,7 @@ export const ThemeButton = Styled.button`
   padding: var(--text-padding-y) var(--text-padding-x);
   border-radius: var(--border-radius);
   background: var(--theme-dark);
-  color: var(--bg-white);
+  color: var(--white);
   font-family: var(--font-family);
   font-size: var(--font-size-text);
   cursor: pointer;
@@ -55,7 +55,7 @@ export const VariantButton = Styled.button`
   padding: var(--text-padding-y) var(--text-padding-x);
   border-radius: var(--border-radius);
   background: var(--variant-dark);
-  color: var(--bg-white);
+  color: var(--white);
   font-family: var(--font-family);
   font-size: var(--font-size-text);
   cursor: pointer;

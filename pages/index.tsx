@@ -2,13 +2,16 @@ import { Card } from "$components/card";
 import { Chart } from "$components/chart";
 import FormFor from "$components/form";
 import { Col, Row } from "$components/layout";
+import { UseUiText } from "$contexts/uitext";
 import { ToDateString } from "$types/utility";
+import { GetDateRange } from "$utils/date-range";
 import {
   IsIntersection,
   IsNumber,
   IsObject,
   IsString,
 } from "@paulpopat/safe-type";
+import { NextPageContext } from "next";
 import React from "react";
 import { InvisibleButton, ThemeButton } from "../components/button";
 import { IconEdit } from "../components/icons";
@@ -18,7 +21,7 @@ import { H1, H2 } from "../components/text";
 import ApiClient from "../services/api";
 import CreatePage from "../services/page";
 import { Category, IsCategory } from "../types/category";
-import { NextMonthObject, NowObject } from "../utils/constants";
+import { NextMonth, ThisMonth } from "../utils/constants";
 import { ToCurrencyString } from "../utils/number";
 
 const Table = TableFor(
@@ -35,17 +38,16 @@ const Form = FormFor(IsObject({ name: IsString, budget: IsNumber }), {
   budget: 0,
 });
 
-async function GetFullCategory(category: Category) {
-  return {
+function GetFullCategory(ctx: NextPageContext) {
+  return async (category: Category) => ({
     ...category,
     spend: (
       await ApiClient.Categories.Spend({
         id: category.id,
-        from: ToDateString(NowObject),
-        to: ToDateString(NextMonthObject),
+        ...GetDateRange(ctx),
       })
     ).spend,
-  };
+  });
 }
 
 export default CreatePage(
@@ -57,11 +59,11 @@ export default CreatePage(
 
     const categories = await ApiClient.Categories.GetAll();
     return {
-      categories: await Promise.all(categories.map(GetFullCategory)),
+      categories: await Promise.all(categories.map(GetFullCategory(ctx))),
       query_result: await ApiClient.Query.Run({
         slug: default_query.slug,
-        from_date: ToDateString(NowObject),
-        to_date: ToDateString(NextMonthObject),
+        from_date: ToDateString(ThisMonth),
+        to_date: ToDateString(NextMonth),
         person: undefined,
         category: undefined,
       }),
@@ -73,12 +75,13 @@ export default CreatePage(
     const [editing, set_editing] = React.useState(false);
     const [current, set_current] = React.useState("");
     const [form_value, set_form_value] = React.useState(Form.default_value);
+    const uitext = UseUiText();
 
     return (
       <>
         <Row>
           <Col xs="12">
-            <H1>Overview</H1>
+            <H1>{uitext.overview}</H1>
           </Col>
         </Row>
         <Row>
@@ -87,10 +90,10 @@ export default CreatePage(
               <Table rows={categories}>
                 <thead>
                   <tr>
-                    <th>Category</th>
-                    <th>Budget</th>
-                    <th>Spend</th>
-                    <th>Diff</th>
+                    <th>{uitext.category}</th>
+                    <th>{uitext.budget}</th>
+                    <th>{uitext.spend}</th>
+                    <th>{uitext.diff}</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -99,9 +102,27 @@ export default CreatePage(
                     {(row) => (
                       <>
                         <td>{row.name}</td>
-                        <td>{ToCurrencyString(row.budget)}</td>
-                        <td>{ToCurrencyString(row.spend)}</td>
-                        <td>{ToCurrencyString(row.budget - row.spend)}</td>
+                        <td>
+                          {ToCurrencyString(
+                            row.budget,
+                            uitext.locale,
+                            uitext.currency_label
+                          )}
+                        </td>
+                        <td>
+                          {ToCurrencyString(
+                            row.spend,
+                            uitext.locale,
+                            uitext.currency_label
+                          )}
+                        </td>
+                        <td>
+                          {ToCurrencyString(
+                            row.budget - row.spend,
+                            uitext.locale,
+                            uitext.currency_label
+                          )}
+                        </td>
                         <td>
                           <InvisibleButton
                             type="button"
@@ -127,7 +148,7 @@ export default CreatePage(
                 </tbody>
               </Table>
               <ThemeButton type="button" onClick={() => set_editing(true)}>
-                Add
+                {uitext.add}
               </ThemeButton>
             </Card>
           </Col>
@@ -156,13 +177,16 @@ export default CreatePage(
                   { id: current },
                   v
                 );
-                const final = await GetFullCategory(response);
+                const final = {
+                  ...response,
+                  spend: categories.find((c) => c.id === current).spend,
+                };
                 set_categories((c) =>
                   c.map((c) => (c.id === final.id ? final : c))
                 );
               } else {
                 const response = await ApiClient.Categories.Add(v);
-                const final = await GetFullCategory(response);
+                const final = { ...response, spend: 0 };
                 set_categories((c) => [...c, final]);
               }
 
@@ -170,11 +194,11 @@ export default CreatePage(
               set_editing(false);
             }}
           >
-            <Form.TextInput name="name">Name</Form.TextInput>
+            <Form.TextInput name="name">{uitext.name}</Form.TextInput>
             <Form.NumberInput name="budget" min={0} decimal_places={2}>
-              Budget (£)
+              {uitext.budget} ({uitext.currency})
             </Form.NumberInput>
-            <ThemeButton type="submit">Submit</ThemeButton>
+            <ThemeButton type="submit">{uitext.submit}</ThemeButton>
           </Form>
         </Modal>
       </>

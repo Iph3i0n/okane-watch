@@ -10,6 +10,7 @@ import { H1 } from "$components/text";
 import { setCookies } from "cookies-next";
 import { AuthTokenKey } from "$utils/constants";
 import { SetAuth } from "$utils/cookies";
+import { UseUiText } from "$contexts/uitext";
 
 const Form = FormFor(IsObject({ name: IsString, password: IsString }), {
   name: "",
@@ -22,6 +23,7 @@ export default CreatePage(
   },
   (props) => {
     const router = useRouter();
+    const uitext = UseUiText();
     const [form, set_form] = React.useState(Form.default_value);
 
     return (
@@ -36,20 +38,22 @@ export default CreatePage(
       >
         <Row>
           <Col xs="12">
-            <H1>Login</H1>
+            <H1>{uitext.login}</H1>
           </Col>
         </Row>
         <Row>
           <Col xs="12" lg="6">
-            <Form.TextInput name="name">Name</Form.TextInput>
+            <Form.TextInput name="name">{uitext.name}</Form.TextInput>
           </Col>
           <Col xs="12" lg="6">
-            <Form.PasswordInput name="password">Password</Form.PasswordInput>
+            <Form.PasswordInput name="password">
+              {uitext.password}
+            </Form.PasswordInput>
           </Col>
         </Row>
         <Row>
           <Col xs="12">
-            <ThemeButton type="submit">Submit</ThemeButton>
+            <ThemeButton type="submit">{uitext.submit}</ThemeButton>
           </Col>
         </Row>
       </Form>

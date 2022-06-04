@@ -145,6 +145,12 @@ const ApiClient = Api(
       url: "/api/permissions",
       returns: IsArray(IsString),
     },
+    UiText: {
+      method: "GET",
+      url: "/api/uitext/:locale",
+      parameters: { locale: IsString },
+      returns: DoNotCare,
+    },
   },
   {
     base: process.env.NEXT_PUBLIC_SITE_URL,
