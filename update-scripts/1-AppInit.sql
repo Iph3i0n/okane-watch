@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS transactions (
   person UUID NOT NULL,
   category UUID NOT NULL,
   description TEXT NOT NULL,
-  amount INTEGER NOT NULL,
+  amount REAL NOT NULL,
   date DATE NOT NULL,
   CONSTRAINT fk_category FOREIGN KEY(category) REFERENCES categories(id),
   CONSTRAINT fk_person FOREIGN KEY(person) REFERENCES people(id)
