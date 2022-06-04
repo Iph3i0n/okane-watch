@@ -1,5 +1,5 @@
-import { Assert, IsNumber, IsObject, IsString } from "@paulpopat/safe-type";
-import { Update, Get } from "$repositories/category";
+import { Assert, IsObject, IsString } from "@paulpopat/safe-type";
+import { Get, Update } from "$repositories/person";
 import { BuildApi } from "$utils/api";
 
 const IsQuery = IsObject({
@@ -8,7 +8,6 @@ const IsQuery = IsObject({
 
 const IsPutBody = IsObject({
   name: IsString,
-  budget: IsNumber,
 });
 
 export default BuildApi({
@@ -24,7 +23,7 @@ export default BuildApi({
     },
   },
   PUT: {
-    require: "cat-man",
+    require: "user-man",
     proc: async (req) => {
       const query = req.query;
       Assert(IsQuery, query);

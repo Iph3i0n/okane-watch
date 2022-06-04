@@ -11,12 +11,15 @@ const IsQuery = IsObject({
 });
 
 export default BuildApi({
-  async GET(req) {
-    const query = req.query;
-    Assert(IsQuery, query);
-    return {
-      status: 200,
-      body: await Execute(query.slug, query),
-    };
+  GET: {
+    require: "view",
+    proc: async (req) => {
+      const query = req.query;
+      Assert(IsQuery, query);
+      return {
+        status: 200,
+        body: await Execute(query.slug, query),
+      };
+    },
   },
 });

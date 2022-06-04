@@ -1,7 +1,7 @@
 import { FromDateString } from "$types/utility";
 import { Assert, IsNumber, IsObject, IsString } from "@paulpopat/safe-type";
-import { Add, GetTransactions } from "../../../repositories/transaction";
-import { BuildApi } from "../../../utils/api";
+import { Add, GetTransactions } from "$repositories/transaction";
+import { BuildApi } from "$utils/api";
 
 const IsPost = IsObject({
   person: IsString,
@@ -17,28 +17,34 @@ const IsGet = IsObject({
 });
 
 export default BuildApi({
-  async GET(req) {
-    const query = req.query;
-    Assert(IsGet, query);
+  GET: {
+    require: "view",
+    proc: async (req) => {
+      const query = req.query;
+      Assert(IsGet, query);
 
-    return {
-      status: 200,
-      body: await GetTransactions(
-        FromDateString(query.from),
-        FromDateString(query.to)
-      ),
-    };
+      return {
+        status: 200,
+        body: await GetTransactions(
+          FromDateString(query.from),
+          FromDateString(query.to)
+        ),
+      };
+    },
   },
-  async POST(req) {
-    const body = req.body;
-    Assert(IsPost, body);
-    const id = await Add({ ...body });
-    return {
-      status: 201,
-      body: {
-        ...body,
-        id,
-      },
-    };
+  POST: {
+    require: "all-tx",
+    proc: async (req) => {
+      const body = req.body;
+      Assert(IsPost, body);
+      const id = await Add({ ...body });
+      return {
+        status: 201,
+        body: {
+          ...body,
+          id,
+        },
+      };
+    },
   },
 });

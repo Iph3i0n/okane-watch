@@ -13,6 +13,12 @@ import { IsCategory } from "../types/category";
 import { IsPerson } from "../types/person";
 import { IsTransaction } from "../types/transaction";
 
+let token: string;
+
+export function SetToken(t: string) {
+  token = t;
+}
+
 const ApiClient = Api(
   {
     Transactions: {
@@ -79,6 +85,12 @@ const ApiClient = Api(
         body: IsObject({ name: IsString }),
         returns: IsPerson,
       },
+      Login: {
+        method: "GET",
+        url: "/api/people/:id/auth-token",
+        parameters: { name: IsString, password: IsString },
+        returns: IsObject({ token: IsString }),
+      },
     },
     Categories: {
       GetAll: {
@@ -131,11 +143,27 @@ const ApiClient = Api(
         returns: DoNotCare,
       },
     },
+    AuthCheck: {
+      method: "GET",
+      url: "/api/auth",
+      returns: DoNotCare,
+    },
   },
   {
     base: process.env.NEXT_PUBLIC_SITE_URL,
     middleware: async (v) => {
       console.log(`Sending ${v.method} to ${v.url}`);
+
+      if (token) {
+        return {
+          ...v,
+          headers: {
+            ...v.headers,
+            Authorization: `Bearer ${token}`,
+          },
+        };
+      }
+
       return v;
     },
   }

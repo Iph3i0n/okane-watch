@@ -1,28 +1,35 @@
 import { Assert, IsObject, IsString } from "@paulpopat/safe-type";
-import { Add, GetAll } from "../../../repositories/person";
-import { BuildApi } from "../../../utils/api";
+import { Add, GetAll } from "$repositories/person";
+import { BuildApi } from "$utils/api";
 
 const IsPost = IsObject({
   name: IsString,
+  password: IsString,
 });
 
 export default BuildApi({
-  async POST(req) {
-    const body = req.body;
-    Assert(IsPost, body);
-    const id = await Add(body.name);
-    return {
-      status: 201,
-      body: {
-        ...body,
-        id,
-      },
-    };
+  POST: {
+    require: "user-man",
+    proc: async (req) => {
+      const body = req.body;
+      Assert(IsPost, body);
+      const id = await Add(body.name, body.password);
+      return {
+        status: 201,
+        body: {
+          ...body,
+          id,
+        },
+      };
+    },
   },
-  async GET(req) {
-    return {
-      status: 200,
-      body: await GetAll(),
-    };
+  GET: {
+    require: "view",
+    proc: async (req) => {
+      return {
+        status: 200,
+        body: await GetAll(),
+      };
+    },
   },
 });
