@@ -59,7 +59,7 @@ export async function GetTransactions(from: DateObject, to: DateObject) {
   const rows = await db.Query(
     `SELECT id, person, category, description, amount, date
      FROM transactions
-     WHERE date > $1 AND date < $2`,
+     WHERE date >= $1 AND date < $2`,
     ToJsDate(from),
     ToJsDate(to)
   );
@@ -78,7 +78,7 @@ export async function GetTotalForCategory(
   const rows = await db.Query(
     `SELECT SUM(amount) as total
      FROM transactions
-     WHERE date > $1 AND date < $2 AND category = $3`,
+     WHERE date >= $1 AND date < $2 AND category = $3`,
     ToJsDate(from),
     ToJsDate(to),
     category_id

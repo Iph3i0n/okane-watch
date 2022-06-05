@@ -1,3 +1,5 @@
+import { UseUiText } from "$contexts/uitext";
+import { ToCurrencyString } from "$utils/number";
 import { Assert, Checker, IsArray } from "@paulpopat/safe-type";
 import React from "react";
 import Styled from "styled-components";
@@ -34,6 +36,36 @@ const Table = Styled.table`
     font-weight: var(--font-weight-standard);
   }
 `;
+
+export const HighlightRow = Styled.tr`
+  border-top: 1px solid var(--body);
+
+  td {
+    font-weight: var(--font-weight-large);
+  }
+`;
+
+export const BadCell = Styled.td`
+  color: var(--error);
+`;
+
+export const GoodCell = Styled.td`
+  color: var(--success);
+`;
+
+export const GoodBadCurrencyCell: React.FC<{ number: number }> = ({
+  number,
+}) => {
+  const uitext = UseUiText();
+  const children = ToCurrencyString(
+    number,
+    uitext.locale,
+    uitext.currency_label
+  );
+
+  if (number > 0) return <GoodCell>{children}</GoodCell>;
+  return <BadCell>{children}</BadCell>;
+};
 
 export default function TableFor<T>(schema: Checker<T>) {
   const TableContext = React.createContext([] as T[]);

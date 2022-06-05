@@ -2,6 +2,7 @@ import { SelectDate } from "$components/form";
 import { UiTextProvider } from "$contexts/uitext";
 import ApiClient from "$services/api";
 import { DateObject, ToDateString } from "$types/utility";
+import C from "$utils/class-name";
 import { GetDateRangeObjects } from "$utils/date-range";
 import { UpdateQueryString } from "$utils/url";
 import App, { AppContext, AppInitialProps } from "next/app";
@@ -59,9 +60,10 @@ type MyAppProps = AppInitialProps & {
   uitext: any;
 };
 
-export default class MyApp extends App<MyAppProps> {
+export default class MyApp extends App<MyAppProps, {}, { loading: boolean }> {
   constructor(props: MyAppProps) {
     super(props as any);
+    this.state = { loading: false };
   }
 
   static async getInitialProps(app: AppContext): Promise<MyAppProps> {
@@ -69,8 +71,23 @@ export default class MyApp extends App<MyAppProps> {
     return {
       ...original,
       range: GetDateRangeObjects(app.ctx),
-      uitext: await ApiClient.UiText({ locale: app.ctx.locale }),
+      uitext: await ApiClient.UiText({
+        locale: app.ctx.locale || app.ctx.defaultLocale || "en-GB",
+      }),
     };
+  }
+
+  componentDidMount(): void {
+    const router = this.props.router;
+    router.events.on("routeChangeStart", () =>
+      this.setState({ loading: true })
+    );
+    router.events.on("routeChangeError", () =>
+      this.setState({ loading: false })
+    );
+    router.events.on("routeChangeComplete", () =>
+      this.setState({ loading: false })
+    );
   }
 
   render() {
@@ -103,7 +120,7 @@ export default class MyApp extends App<MyAppProps> {
             </div>
           </Container>
         </Header>
-        <Container>
+        <Container className={C(["loading", this.state.loading])}>
           <this.props.Component {...this.props.pageProps} />
         </Container>
       </UiTextProvider>

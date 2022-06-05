@@ -1,4 +1,6 @@
+import { Card } from "$components/card";
 import FormFor from "$components/form";
+import { Col, Row } from "$components/layout";
 import { UseUiText } from "$contexts/uitext";
 import { IsDateObject, ToDateString } from "$types/utility";
 import { GetDateRange } from "$utils/date-range";
@@ -68,74 +70,96 @@ export default CreatePage(
 
     return (
       <>
-        <H1>{uitext.transactions}</H1>
-        <Table rows={transactions}>
-          <thead>
-            <tr>
-              <th>{uitext.date}</th>
-              <th>{uitext.person}</th>
-              <th>{uitext.description}</th>
-              <th>{uitext.category}</th>
-              <th>{uitext.amount}</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <Table.Row>
-              {(row) => (
-                <>
-                  <td>{ToDateString(row.when)}</td>
-                  <td>{row.person.name}</td>
-                  <td>{row.description}</td>
-                  <td>{row.category.name}</td>
-                  <td>
-                    {ToCurrencyString(
-                      row.amount,
-                      uitext.locale,
-                      uitext.currency_label
+        <Row>
+          <Col xs="12">
+            <H1>{uitext.transactions}</H1>
+          </Col>
+        </Row>
+        <Row>
+          <Col xs="12">
+            <Card>
+              <Table rows={transactions}>
+                <thead>
+                  <tr>
+                    <th>{uitext.date}</th>
+                    <th>{uitext.person}</th>
+                    <th>{uitext.description}</th>
+                    <th>{uitext.category}</th>
+                    <th>{uitext.amount}</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <Table.Row>
+                    {(row) => (
+                      <>
+                        <td>{ToDateString(row.when)}</td>
+                        <td>{row.person.name}</td>
+                        <td>{row.description}</td>
+                        <td>{row.category.name}</td>
+                        <td>
+                          {ToCurrencyString(
+                            row.amount,
+                            uitext.locale,
+                            uitext.currency_label
+                          )}
+                        </td>
+                        <td>
+                          <InvisibleButton
+                            type="button"
+                            onClick={() => {
+                              set_current(row.id);
+                              set_form_value({
+                                when: row.when,
+                                person: row.person.id,
+                                description: row.description,
+                                category: row.category.id,
+                                amount: row.amount,
+                              });
+                              set_editing(true);
+                            }}
+                          >
+                            <IconEdit
+                              colour="var(--body)"
+                              width="24"
+                              height="24"
+                            />
+                          </InvisibleButton>
+                          <InvisibleButton
+                            type="button"
+                            onClick={() => {
+                              set_deleting(row.id);
+                            }}
+                          >
+                            <IconDelete
+                              colour="var(--body)"
+                              width="24"
+                              height="24"
+                            />
+                          </InvisibleButton>
+                        </td>
+                      </>
                     )}
-                  </td>
-                  <td>
-                    <InvisibleButton
-                      type="button"
-                      onClick={() => {
-                        set_current(row.id);
-                        set_form_value({
-                          when: row.when,
-                          person: row.person.id,
-                          description: row.description,
-                          category: row.category.id,
-                          amount: row.amount,
-                        });
-                        set_editing(true);
-                      }}
-                    >
-                      <IconEdit colour="var(--body)" width="24" height="24" />
-                    </InvisibleButton>
-                    <InvisibleButton
-                      type="button"
-                      onClick={() => {
-                        set_deleting(row.id);
-                      }}
-                    >
-                      <IconDelete colour="var(--body)" width="24" height="24" />
-                    </InvisibleButton>
-                  </td>
-                </>
-              )}
-            </Table.Row>
-          </tbody>
-        </Table>
-        <ThemeButton
-          type="button"
-          onClick={() => {
-            set_editing(true);
-            set_current("");
-            set_form_value(Form.default_value);
-          }}
-        >
-          {uitext.add}
-        </ThemeButton>
+                  </Table.Row>
+                </tbody>
+              </Table>
+            </Card>
+          </Col>
+        </Row>
+        <Row>
+          <Col xs="12">
+            <ThemeButton
+              type="button"
+              onClick={() => {
+                set_editing(true);
+                set_current("");
+                set_form_value(Form.default_value);
+              }}
+            >
+              {uitext.add}
+            </ThemeButton>
+          </Col>
+        </Row>
         <Modal
           title="Transaction"
           open={editing}

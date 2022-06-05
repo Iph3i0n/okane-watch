@@ -10,13 +10,18 @@ import {
   IsNumber,
   IsObject,
   IsString,
+  IsType,
 } from "@paulpopat/safe-type";
 import { NextPageContext } from "next";
 import React from "react";
 import { InvisibleButton, ThemeButton } from "../components/button";
 import { IconEdit } from "../components/icons";
 import Modal from "../components/modal";
-import TableFor from "../components/table";
+import TableFor, {
+  GoodBadCurrencyCell,
+  GoodCell,
+  HighlightRow,
+} from "../components/table";
 import { H1, H2 } from "../components/text";
 import ApiClient from "../services/api";
 import CreatePage from "../services/page";
@@ -24,14 +29,15 @@ import { Category, IsCategory } from "../types/category";
 import { NextMonth, ThisMonth } from "../utils/constants";
 import { ToCurrencyString } from "../utils/number";
 
-const Table = TableFor(
-  IsIntersection(
-    IsObject({
-      spend: IsNumber,
-    }),
-    IsCategory
-  )
+const IsRow = IsIntersection(
+  IsObject({
+    spend: IsNumber,
+    diff: IsNumber,
+  }),
+  IsCategory
 );
+
+const Table = TableFor(IsRow);
 
 const Form = FormFor(IsObject({ name: IsString, budget: IsNumber }), {
   name: "",
@@ -39,15 +45,17 @@ const Form = FormFor(IsObject({ name: IsString, budget: IsNumber }), {
 });
 
 function GetFullCategory(ctx: NextPageContext) {
-  return async (category: Category) => ({
-    ...category,
-    spend: (
-      await ApiClient.Categories.Spend({
-        id: category.id,
-        ...GetDateRange(ctx),
-      })
-    ).spend,
-  });
+  return async (category: Category) => {
+    const res = await ApiClient.Categories.Spend({
+      id: category.id,
+      ...GetDateRange(ctx),
+    });
+    return {
+      ...category,
+      spend: res.spend,
+      diff: category.budget - res.spend,
+    };
+  };
 }
 
 export default CreatePage(
@@ -116,13 +124,7 @@ export default CreatePage(
                             uitext.currency_label
                           )}
                         </td>
-                        <td>
-                          {ToCurrencyString(
-                            row.budget - row.spend,
-                            uitext.locale,
-                            uitext.currency_label
-                          )}
-                        </td>
+                        <GoodBadCurrencyCell number={row.diff} />
                         <td>
                           <InvisibleButton
                             type="button"
@@ -145,6 +147,33 @@ export default CreatePage(
                       </>
                     )}
                   </Table.Row>
+                  <HighlightRow>
+                    <td>{uitext.total}</td>
+                    <td>
+                      {ToCurrencyString(
+                        categories
+                          .map((c) => c.budget)
+                          .reduce((c, n) => c + n, 0),
+                        uitext.locale,
+                        uitext.currency_label
+                      )}
+                    </td>
+                    <td>
+                      {ToCurrencyString(
+                        categories
+                          .map((c) => c.spend)
+                          .reduce((c, n) => c + n, 0),
+                        uitext.locale,
+                        uitext.currency_label
+                      )}
+                    </td>
+                    <GoodBadCurrencyCell
+                      number={categories
+                        .map((c) => c.diff)
+                        .reduce((c, n) => c + n, 0)}
+                    />
+                    <td />
+                  </HighlightRow>
                 </tbody>
               </Table>
               <ThemeButton
@@ -184,16 +213,18 @@ export default CreatePage(
                   { id: current },
                   v
                 );
+
+                const existing = categories.find((c) => c.id === current);
                 const final = {
+                  ...existing,
                   ...response,
-                  spend: categories.find((c) => c.id === current).spend,
                 };
                 set_categories((c) =>
                   c.map((c) => (c.id === final.id ? final : c))
                 );
               } else {
                 const response = await ApiClient.Categories.Add(v);
-                const final = { ...response, spend: 0 };
+                const final = { ...response, spend: 0, diff: response.budget };
                 set_categories((c) => [...c, final]);
               }
 
