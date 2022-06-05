@@ -6,7 +6,9 @@ import { Category, IsCategory } from "$types/category";
 export async function GetAll() {
   const db = await GetDb();
 
-  const rows = await db.Query(`SELECT id, name, budget FROM categories`);
+  const rows = await db.Query(
+    `SELECT id, name, budget FROM categories ORDER BY name DESC`
+  );
   Assert(IsArray(IsCategory), rows);
   return rows;
 }

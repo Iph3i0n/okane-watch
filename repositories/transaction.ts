@@ -60,7 +60,8 @@ export async function GetTransactions(from: DateObject, to: DateObject) {
   const rows = await db.Query(
     `SELECT id, person, category, description, amount, date
      FROM transactions
-     WHERE date >= $1 AND date < $2`,
+     WHERE date >= $1 AND date < $2
+     ORDER BY date DESC, person DESC, description DESC`,
     ToJsDate(from),
     ToJsDate(to)
   );

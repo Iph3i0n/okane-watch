@@ -21,7 +21,7 @@ export function Matches(data: string, encrypted: string) {
 export async function GetAll() {
   const db = await GetDb();
 
-  const rows = await db.Query(`SELECT id, name FROM people`);
+  const rows = await db.Query(`SELECT id, name FROM people ORDER BY name DESC`);
   Assert(IsArray(IsPerson), rows);
   return rows;
 }
