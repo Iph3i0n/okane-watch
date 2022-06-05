@@ -10,6 +10,7 @@ import {
   IsString,
   IsTuple,
   IsType,
+  IsUnion,
   Optional,
 } from "@paulpopat/safe-type";
 import { DateObject, FromJsDate, ToJsDate } from "$types/utility";
@@ -85,8 +86,8 @@ export async function GetTotalForCategory(
   );
 
   await db.End();
-  Assert(IsTuple(IsObject({ total: Optional(IsString) })), rows);
-  return parseInt(rows[0].total ?? "0");
+  Assert(IsTuple(IsObject({ total: Optional(IsUnion(IsNumber, IsString)) })), rows);
+  return parseFloat(rows[0].total.toString() ?? "0");
 }
 
 export async function Update(id: string, transaction: Omit<Transaction, "id">) {
