@@ -1,17 +1,17 @@
-import { ToCurrencyString } from "$utils/number";
 import {
   Assert,
   IsArray,
+  IsNumber,
   IsObject,
   IsString,
   IsType,
 } from "@paulpopat/safe-type";
 import React from "react";
-import { Cell, Legend, Pie, PieChart, Tooltip } from "recharts";
+import { Cell, Legend, Pie, PieChart } from "recharts";
 import Styled from "styled-components";
 
 const ChartDataTypes = {
-  pie: IsArray(IsObject({ key: IsString, value: IsString })),
+  pie: IsArray(IsObject({ key: IsString, value: IsNumber })),
 };
 
 type TChartData = typeof ChartDataTypes;
@@ -40,7 +40,7 @@ const ChartTypes: {
         <Pie
           dataKey="value"
           isAnimationActive={true}
-          data={data.map((d) => ({ name: d.key, value: parseFloat(d.value) }))}
+          data={data.map((d) => ({ name: d.key, value: d.value }))}
           cx="50%"
           cy="50%"
           outerRadius={80}
