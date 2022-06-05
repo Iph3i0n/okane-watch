@@ -87,7 +87,7 @@ export async function GetTotalForCategory(
 
   await db.End();
   Assert(IsTuple(IsObject({ total: Optional(IsUnion(IsNumber, IsString)) })), rows);
-  return parseFloat(rows[0].total.toString() ?? "0");
+  return parseFloat(rows[0].total?.toString() ?? "0");
 }
 
 export async function Update(id: string, transaction: Omit<Transaction, "id">) {
