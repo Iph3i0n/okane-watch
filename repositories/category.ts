@@ -7,7 +7,7 @@ export async function GetAll() {
   const db = await GetDb();
 
   const rows = await db.Query(
-    `SELECT id, name, budget FROM categories ORDER BY name DESC`
+    `SELECT id, name, budget FROM categories ORDER BY name ASC`
   );
   Assert(IsArray(IsCategory), rows);
   return rows;
