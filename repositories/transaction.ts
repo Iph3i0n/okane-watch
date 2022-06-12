@@ -14,6 +14,8 @@ import {
 } from "@paulpopat/safe-type";
 import { DateObject, FromJsDate, ToJsDate } from "$types/utility";
 import { DatabaseContext } from "$contexts/database";
+import { Get as GetCategory } from "./category";
+import { Get as GetPerson } from "./person";
 
 const IsTransactionDto = IsObject({
   id: IsString,
@@ -26,11 +28,11 @@ const IsTransactionDto = IsObject({
 
 type TransactionDto = IsType<typeof IsTransactionDto>;
 
-function FromDto(transaction: TransactionDto): Transaction {
+async function FromDto(transaction: TransactionDto) {
   return {
     id: transaction.id,
-    person: transaction.person,
-    category: transaction.category,
+    person: await GetPerson(transaction.person),
+    category: await GetCategory(transaction.category),
     description: transaction.description,
     amount: transaction.amount,
     when: FromJsDate(transaction.date),
@@ -66,7 +68,7 @@ export async function GetTransactions(from: DateObject, to: DateObject) {
   );
 
   Assert(IsArray(IsTransactionDto), rows);
-  return rows.map(FromDto);
+  return await Promise.all(rows.map(FromDto));
 }
 
 export async function GetTotalForCategory(

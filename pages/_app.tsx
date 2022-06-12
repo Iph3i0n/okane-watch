@@ -1,8 +1,11 @@
 import { SelectDate } from "$components/form";
+import { UserProvider } from "$contexts/react-user";
 import { UiTextProvider } from "$contexts/uitext";
 import ApiClient from "$services/api";
+import { User } from "$types/person";
 import { DateObject, ToDateString } from "$types/utility";
 import C from "$utils/class-name";
+import { OverrideOptions } from "$utils/cookies";
 import { GetDateRangeObjects } from "$utils/date-range";
 import { UpdateQueryString } from "$utils/url";
 import App, { AppContext, AppInitialProps } from "next/app";
@@ -58,7 +61,16 @@ const Header = Styled.header`
 type MyAppProps = AppInitialProps & {
   range: { from: DateObject; to: DateObject };
   uitext: any;
+  user: User;
 };
+
+async function GetUser() {
+  try {
+    return await ApiClient.AuthCheck();
+  } catch {
+    return undefined;
+  }
+}
 
 export default class MyApp extends App<MyAppProps, {}, { loading: boolean }> {
   constructor(props: MyAppProps) {
@@ -67,13 +79,19 @@ export default class MyApp extends App<MyAppProps, {}, { loading: boolean }> {
   }
 
   static async getInitialProps(app: AppContext): Promise<MyAppProps> {
-    const original = await App.getInitialProps(app);
+    if (app.ctx.req) OverrideOptions({ req: app.ctx.req, res: app.ctx.res });
+    const user = await GetUser();
+    const original = await App.getInitialProps({
+      ...app,
+      ctx: { ...app.ctx, user },
+    } as any);
     return {
       ...original,
       range: GetDateRangeObjects(app.ctx),
       uitext: await ApiClient.UiText({
         locale: app.ctx.locale || app.ctx.defaultLocale || "en-GB",
       }),
+      user,
     };
   }
 
@@ -93,36 +111,40 @@ export default class MyApp extends App<MyAppProps, {}, { loading: boolean }> {
   render() {
     return (
       <UiTextProvider uitext={this.props.uitext}>
-        <Head>
-          <title>{this.props.uitext.app_title}</title>
-        </Head>
-        <Header>
-          <Container>
-            <b>{this.props.uitext.app_title}</b>
-            <nav>
-              <Link href="/">{this.props.uitext.overview}</Link>
-              <Link href="/transactions">{this.props.uitext.transactions}</Link>
-              <Link href="/people">{this.props.uitext.people}</Link>
-            </nav>
-            <div className="date-selector">
-              <SelectDate
-                date={this.props.range.from}
-                set_date={(d) => UpdateQueryString("from", ToDateString(d))}
-              >
-                {this.props.uitext.from}
-              </SelectDate>
-              <SelectDate
-                date={this.props.range.to}
-                set_date={(d) => UpdateQueryString("to", ToDateString(d))}
-              >
-                {this.props.uitext.to}
-              </SelectDate>
-            </div>
+        <UserProvider user={this.props.user}>
+          <Head>
+            <title>{this.props.uitext.app_title}</title>
+          </Head>
+          <Header>
+            <Container>
+              <b>{this.props.uitext.app_title}</b>
+              <nav>
+                <Link href="/">{this.props.uitext.overview}</Link>
+                <Link href="/transactions">
+                  {this.props.uitext.transactions}
+                </Link>
+                <Link href="/people">{this.props.uitext.people}</Link>
+              </nav>
+              <div className="date-selector">
+                <SelectDate
+                  date={this.props.range.from}
+                  set_date={(d) => UpdateQueryString("from", ToDateString(d))}
+                >
+                  {this.props.uitext.from}
+                </SelectDate>
+                <SelectDate
+                  date={this.props.range.to}
+                  set_date={(d) => UpdateQueryString("to", ToDateString(d))}
+                >
+                  {this.props.uitext.to}
+                </SelectDate>
+              </div>
+            </Container>
+          </Header>
+          <Container className={C(["loading", this.state.loading])}>
+            <this.props.Component {...this.props.pageProps} />
           </Container>
-        </Header>
-        <Container className={C(["loading", this.state.loading])}>
-          <this.props.Component {...this.props.pageProps} />
-        </Container>
+        </UserProvider>
       </UiTextProvider>
     );
   }

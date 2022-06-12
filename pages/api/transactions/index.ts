@@ -2,9 +2,9 @@ import { FromDateString } from "$types/utility";
 import { Assert, IsNumber, IsObject, IsString } from "@paulpopat/safe-type";
 import { Add, GetTransactions } from "$repositories/transaction";
 import { BuildApi } from "$utils/api";
+import { UserContext } from "$contexts/user";
 
 const IsPost = IsObject({
-  person: IsString,
   category: IsString,
   description: IsString,
   amount: IsNumber,
@@ -37,7 +37,8 @@ export default BuildApi({
     proc: async (req) => {
       const body = req.body;
       Assert(IsPost, body);
-      const id = await Add({ ...body });
+      const user = UserContext.Use();
+      const id = await Add({ ...body, person: user.id });
       return {
         status: 201,
         body: {

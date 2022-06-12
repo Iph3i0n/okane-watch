@@ -8,6 +8,7 @@ import { GetDb } from "$services/database";
 import * as People from "$repositories/person";
 import * as Permissions from "$repositories/permissions";
 import { PermissionOptions } from "$types/permission";
+import { DatabaseContext } from "$contexts/database";
 
 Dotenv.config();
 
@@ -18,15 +19,13 @@ const app = Next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
 async function RunMigrations() {
-  const db = await GetDb();
+  const db = DatabaseContext.Use();
   const update_scripts_base = Path.join(".", "update-scripts");
   for (const file of await Fs.readdir(update_scripts_base)) {
     const loc = Path.join(update_scripts_base, file);
     const data = await Fs.readFile(loc, "utf-8");
     await db.Query(data);
   }
-
-  await db.End();
 }
 
 async function ShouldAddAdmin() {
@@ -61,9 +60,12 @@ async function AddAllPermissions() {
 }
 
 (async () => {
+  const db = await GetDb();
+  DatabaseContext.Provide(db);
   await RunMigrations();
   await AddAllPermissions();
   if (await ShouldAddAdmin()) await AddAdmin();
+  db.End();
 
   await app.prepare();
   CreateServer(async (req, res) => {

@@ -46,7 +46,7 @@ export function BuildApi(handlers: Api) {
       }
 
       const response = await handler.proc(req);
-      database.End();
+      await database.End();
 
       for (const key in response.headers ?? {}) {
         if (!response.headers?.hasOwnProperty(key)) continue;

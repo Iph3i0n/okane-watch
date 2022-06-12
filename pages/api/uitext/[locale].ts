@@ -1,4 +1,3 @@
-import { Execute } from "$repositories/query";
 import { BuildApi } from "$utils/api";
 import { Assert, IsObject, IsString } from "@paulpopat/safe-type";
 import Fs from "fs-extra";

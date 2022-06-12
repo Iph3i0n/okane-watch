@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/PaulPopat/okane-watch#readme",
   "dependencies": {
-    "@paulpopat/api-interface": "^1.1.12",
+    "@paulpopat/api-interface": "^2.0.1",
     "@paulpopat/safe-type": "^2.2.1",
     "bcrypt": "^5.0.1",
     "cookies-next": "^2.0.4",

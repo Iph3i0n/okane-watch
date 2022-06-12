@@ -1,6 +1,7 @@
 import { Card } from "$components/card";
 import FormFor from "$components/form";
 import { Col, Row } from "$components/layout";
+import { UseCurrentUser } from "$contexts/react-user";
 import { UseUiText } from "$contexts/uitext";
 import { IsDateObject, ToDateString } from "$types/utility";
 import { GetDateRange } from "$utils/date-range";
@@ -16,9 +17,9 @@ import Modal from "../components/modal";
 import TableFor from "../components/table";
 import { H1 } from "../components/text";
 import ApiClient from "../services/api";
-import CreatePage from "../services/page";
-import { IsCompleteTransaction, Transaction } from "../types/transaction";
-import { Year, Month, Day, ThisMonth, NextMonth } from "../utils/constants";
+import CreatePage from "../utils/page";
+import { IsCompleteTransaction } from "../types/transaction";
+import { Year, Month, Day } from "../utils/constants";
 import { ToCurrencyString } from "../utils/number";
 
 const Table = TableFor(IsCompleteTransaction);
@@ -26,42 +27,28 @@ const Table = TableFor(IsCompleteTransaction);
 const Form = FormFor(
   IsObject({
     when: IsDateObject,
-    person: IsString,
     description: IsString,
     category: IsString,
     amount: IsNumber,
   }),
   {
     when: { day: Day, month: Month, year: Year },
-    person: "",
     description: "",
     category: "",
     amount: 0,
   }
 );
 
-async function GetFullTransaction(transaction: Transaction) {
-  return {
-    ...transaction,
-    person: await ApiClient.People.Get({ id: transaction.person }),
-    category: await ApiClient.Categories.Get({ id: transaction.category }),
-  };
-}
-
 export default CreatePage(
   async (ctx) => {
-    const transactions = await ApiClient.Transactions.GetMonth(
-      GetDateRange(ctx)
-    );
-
     return {
-      transactions: await Promise.all(transactions.map(GetFullTransaction)),
+      transactions: await ApiClient.Transactions.GetMonth(GetDateRange(ctx)),
       categories: await ApiClient.Categories.GetAll(),
-      people: await ApiClient.People.GetAll(),
     };
   },
   (props) => {
     const uitext = UseUiText();
+    const user = UseCurrentUser();
     const [transactions, set_transactions] = React.useState(props.transactions);
     const [editing, set_editing] = React.useState(false);
     const [current, set_current] = React.useState("");
@@ -111,7 +98,6 @@ export default CreatePage(
                               set_current(row.id);
                               set_form_value({
                                 when: row.when,
-                                person: row.person.id,
                                 description: row.description,
                                 category: row.category.id,
                                 amount: row.amount,
@@ -174,17 +160,30 @@ export default CreatePage(
             on_change={set_form_value}
             on_submit={async (v) => {
               if (current) {
+                const original = transactions.find((t) => t.id === current);
                 const response = await ApiClient.Transactions.Update(
                   { id: current },
-                  v
+                  { ...v, person: original.person.id }
                 );
-                const final = await GetFullTransaction(response);
+                const final = {
+                  ...response,
+                  person: original.person,
+                  category: props.categories.find(
+                    (c) => c.id === response.category
+                  ),
+                };
                 set_transactions((t) =>
                   t.map((c) => (c.id === final.id ? final : c))
                 );
               } else {
                 const response = await ApiClient.Transactions.Add(v);
-                const final = await GetFullTransaction(response);
+                const final = {
+                  ...response,
+                  person: user,
+                  category: props.categories.find(
+                    (c) => c.id === response.category
+                  ),
+                };
                 set_transactions((t) => [...t, final]);
               }
 
@@ -196,13 +195,6 @@ export default CreatePage(
               {uitext.description}
             </Form.TextInput>
             <Form.DatePicker name="when">{uitext.when}</Form.DatePicker>
-            <Form.Select name="person" label={uitext.person}>
-              {props.people.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </Form.Select>
             <Form.Select name="category" label={uitext.category}>
               {props.categories.map((p) => (
                 <option key={p.id} value={p.id}>

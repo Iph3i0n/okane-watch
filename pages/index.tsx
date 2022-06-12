@@ -3,30 +3,25 @@ import { Chart } from "$components/chart";
 import FormFor from "$components/form";
 import { Col, Row } from "$components/layout";
 import { UseUiText } from "$contexts/uitext";
-import { ToDateString } from "$types/utility";
 import { GetDateRange } from "$utils/date-range";
 import {
   IsIntersection,
   IsNumber,
   IsObject,
   IsString,
-  IsType,
 } from "@paulpopat/safe-type";
-import { NextPageContext } from "next";
 import React from "react";
 import { InvisibleButton, ThemeButton } from "../components/button";
 import { IconEdit } from "../components/icons";
 import Modal from "../components/modal";
 import TableFor, {
   GoodBadCurrencyCell,
-  GoodCell,
   HighlightRow,
 } from "../components/table";
 import { H1, H2 } from "../components/text";
 import ApiClient from "../services/api";
-import CreatePage from "../services/page";
-import { Category, IsCategory } from "../types/category";
-import { NextMonth, ThisMonth } from "../utils/constants";
+import CreatePage from "../utils/page";
+import { IsCategory } from "../types/category";
 import { ToCurrencyString } from "../utils/number";
 
 const IsRow = IsIntersection(
@@ -44,20 +39,6 @@ const Form = FormFor(IsObject({ name: IsString, budget: IsNumber }), {
   budget: 0,
 });
 
-function GetFullCategory(ctx: NextPageContext) {
-  return async (category: Category) => {
-    const res = await ApiClient.Categories.Spend({
-      id: category.id,
-      ...GetDateRange(ctx),
-    });
-    return {
-      ...category,
-      spend: res.spend,
-      diff: category.budget - res.spend,
-    };
-  };
-}
-
 export default CreatePage(
   async (ctx) => {
     const queries = await ApiClient.Query.GetAll();
@@ -65,13 +46,13 @@ export default CreatePage(
       (q) => q.slug === queries.default_query
     );
 
-    const categories = await ApiClient.Categories.GetAll();
+    const range = GetDateRange(ctx);
     return {
-      categories: await Promise.all(categories.map(GetFullCategory(ctx))),
+      categories: await ApiClient.Categories.GetOverview(range),
       query_result: await ApiClient.Query.Run({
         slug: default_query.slug,
-        from_date: ToDateString(ThisMonth),
-        to_date: ToDateString(NextMonth),
+        from_date: range.from,
+        to_date: range.to,
         person: undefined,
         category: undefined,
       }),

@@ -2,15 +2,45 @@ import { v4 as Guid } from "uuid";
 import { Assert, IsArray, IsTuple } from "@paulpopat/safe-type";
 import { Category, IsCategory } from "$types/category";
 import { DatabaseContext } from "$contexts/database";
+import { UserContext } from "$contexts/user";
+import { GetTotalForCategory } from "./transaction";
+import { DateObject } from "$types/utility";
 
 export async function GetAll() {
   const db = DatabaseContext.Use();
+  const user = UserContext.Use();
   const rows = await db.Query(
-    `SELECT id, name, budget FROM categories ORDER BY name ASC`
+    `SELECT id, name, budget
+     FROM categories
+     WHERE person = $1 OR person IS NULL
+     ORDER BY name ASC`,
+    user.id
   );
 
   Assert(IsArray(IsCategory), rows);
   return rows;
+}
+
+export async function GetOverview(from: DateObject, to: DateObject) {
+  const db = DatabaseContext.Use();
+  const user = UserContext.Use();
+  const rows = await db.Query(
+    `SELECT id, name, budget
+     FROM categories
+     WHERE person = $1 OR person IS NULL
+     ORDER BY name ASC`,
+    user.id
+  );
+
+  Assert(IsArray(IsCategory), rows);
+  return (
+    await Promise.all(
+      rows.map(async (r) => ({
+        ...r,
+        spend: await GetTotalForCategory(r.id, from, to),
+      }))
+    )
+  ).map((r) => ({ ...r, diff: r.budget - r.spend }));
 }
 
 export async function Get(id: string) {

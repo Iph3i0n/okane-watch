@@ -10,11 +10,9 @@ import {
   Optional,
   IsBoolean,
 } from "@paulpopat/safe-type";
-import { IsCategory } from "../types/category";
-import { IsPerson } from "../types/person";
-import { IsTransaction } from "../types/transaction";
-import { getCookie } from "cookies-next";
-import { AuthTokenKey } from "$utils/constants";
+import { IsCategory, IsSummaryCategory } from "../types/category";
+import { IsPerson, IsUser } from "../types/person";
+import { IsCompleteTransaction, IsTransaction } from "../types/transaction";
 import { GetAuth } from "$utils/cookies";
 
 const ApiClient = Api(
@@ -24,13 +22,12 @@ const ApiClient = Api(
         method: "GET",
         url: "/api/transactions",
         parameters: { from: IsString, to: IsString },
-        returns: IsArray(IsTransaction),
+        returns: IsArray(IsCompleteTransaction),
       },
       Add: {
         method: "POST",
         url: "/api/transactions",
         body: IsObject({
-          person: IsString,
           category: IsString,
           description: IsString,
           amount: IsNumber,
@@ -110,6 +107,12 @@ const ApiClient = Api(
         url: "/api/categories",
         returns: IsArray(IsCategory),
       },
+      GetOverview: {
+        method: "GET",
+        url: "/api/categories/overview",
+        parameters: { from: IsString, to: IsString },
+        returns: IsArray(IsSummaryCategory),
+      },
       Get: {
         method: "GET",
         url: "/api/categories/:id",
@@ -128,12 +131,6 @@ const ApiClient = Api(
         parameters: { id: IsString },
         body: IsObject({ name: IsString, budget: IsNumber }),
         returns: IsCategory,
-      },
-      Spend: {
-        method: "GET",
-        url: "/api/categories/:id/spend",
-        parameters: { id: IsString, from: IsString, to: IsString },
-        returns: IsObject({ spend: IsNumber }),
       },
     },
     Query: {
@@ -157,8 +154,8 @@ const ApiClient = Api(
     },
     AuthCheck: {
       method: "GET",
-      url: "/api/permissions",
-      returns: IsArray(IsString),
+      url: "/api/current-user",
+      returns: IsUser,
     },
     UiText: {
       method: "GET",
@@ -169,19 +166,27 @@ const ApiClient = Api(
   },
   {
     base: process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL,
-    middleware: async (v) => {
-      const cookie = GetAuth();
-      if (cookie) {
-        return {
-          ...v,
-          headers: {
-            ...v.headers,
-            Authorization: `Bearer ${cookie}`,
-          },
-        };
+    on_request: async (v) => {
+      try {
+        const cookie = GetAuth();
+        if (cookie) {
+          return {
+            ...v,
+            headers: {
+              ...v.headers,
+              Authorization: `Bearer ${cookie}`,
+            },
+          };
+        }
+      } catch (err) {
+        console.error(err);
+        return v;
       }
 
       return v;
+    },
+    on_error: (_, url) => {
+      return new Error("Error at " + url);
     },
   }
 );
