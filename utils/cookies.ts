@@ -1,4 +1,4 @@
-import { getCookie, setCookies } from "cookies-next";
+import { getCookie, setCookies, removeCookies } from "cookies-next";
 import { OptionsType } from "cookies-next/lib/types";
 import { AuthTokenKey } from "./constants";
 
@@ -14,4 +14,9 @@ export function GetAuth() {
 
 export function SetAuth(value: string) {
   setCookies(AuthTokenKey, value, options_override);
+}
+
+export function ClearAuth() {
+  removeCookies(AuthTokenKey, options_override);
+  window.location.reload();
 }

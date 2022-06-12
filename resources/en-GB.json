@@ -28,5 +28,8 @@
   "are_you_sure": "Are you sure?",
   "admin": "Admin",
   "pick_one": "Pick One",
-  "total": "Total"
+  "total": "Total",
+  "personal": "Personal",
+  "logout": "Logout",
+  "totals": "Totals"
 }

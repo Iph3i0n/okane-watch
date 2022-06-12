@@ -1,10 +1,9 @@
-import { FromDateString } from "$types/utility";
 import { Assert, IsObject, IsString } from "@paulpopat/safe-type";
-import { GetTotalForCategory } from "$repositories/transaction";
+import { GetOverview } from "$repositories/category";
 import { BuildApi } from "$utils/api";
+import { FromDateString } from "$types/utility";
 
 const IsGet = IsObject({
-  id: IsString,
   from: IsString,
   to: IsString,
 });
@@ -18,13 +17,10 @@ export default BuildApi({
 
       return {
         status: 200,
-        body: {
-          spend: await GetTotalForCategory(
-            query.id,
-            FromDateString(query.from),
-            FromDateString(query.to)
-          ),
-        },
+        body: await GetOverview(
+          FromDateString(query.from),
+          FromDateString(query.to)
+        ),
       };
     },
   },

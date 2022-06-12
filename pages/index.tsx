@@ -3,60 +3,28 @@ import { Chart } from "$components/chart";
 import FormFor from "$components/form";
 import { Col, Row } from "$components/layout";
 import { UseUiText } from "$contexts/uitext";
-import { ToDateString } from "$types/utility";
 import { GetDateRange } from "$utils/date-range";
-import {
-  IsIntersection,
-  IsNumber,
-  IsObject,
-  IsString,
-  IsType,
-} from "@paulpopat/safe-type";
-import { NextPageContext } from "next";
+import { IsBoolean, IsNumber, IsObject, IsString } from "@paulpopat/safe-type";
 import React from "react";
 import { InvisibleButton, ThemeButton } from "../components/button";
 import { IconEdit } from "../components/icons";
 import Modal from "../components/modal";
 import TableFor, {
   GoodBadCurrencyCell,
-  GoodCell,
   HighlightRow,
 } from "../components/table";
 import { H1, H2 } from "../components/text";
 import ApiClient from "../services/api";
-import CreatePage from "../services/page";
-import { Category, IsCategory } from "../types/category";
-import { NextMonth, ThisMonth } from "../utils/constants";
+import CreatePage from "../utils/page";
+import { IsSummaryCategory } from "../types/category";
 import { ToCurrencyString } from "../utils/number";
 
-const IsRow = IsIntersection(
-  IsObject({
-    spend: IsNumber,
-    diff: IsNumber,
-  }),
-  IsCategory
+const Table = TableFor(IsSummaryCategory);
+
+const Form = FormFor(
+  IsObject({ name: IsString, budget: IsNumber, personal: IsBoolean }),
+  { name: "", budget: 0, personal: false }
 );
-
-const Table = TableFor(IsRow);
-
-const Form = FormFor(IsObject({ name: IsString, budget: IsNumber }), {
-  name: "",
-  budget: 0,
-});
-
-function GetFullCategory(ctx: NextPageContext) {
-  return async (category: Category) => {
-    const res = await ApiClient.Categories.Spend({
-      id: category.id,
-      ...GetDateRange(ctx),
-    });
-    return {
-      ...category,
-      spend: res.spend,
-      diff: category.budget - res.spend,
-    };
-  };
-}
 
 export default CreatePage(
   async (ctx) => {
@@ -65,13 +33,13 @@ export default CreatePage(
       (q) => q.slug === queries.default_query
     );
 
-    const categories = await ApiClient.Categories.GetAll();
+    const range = GetDateRange(ctx);
     return {
-      categories: await Promise.all(categories.map(GetFullCategory(ctx))),
+      categories: await ApiClient.Categories.GetOverview(range),
       query_result: await ApiClient.Query.Run({
         slug: default_query.slug,
-        from_date: ToDateString(ThisMonth),
-        to_date: ToDateString(NextMonth),
+        from_date: range.from,
+        to_date: range.to,
         person: undefined,
         category: undefined,
       }),
@@ -90,6 +58,11 @@ export default CreatePage(
         <Row>
           <Col xs="12">
             <H1>{uitext.overview}</H1>
+          </Col>
+        </Row>
+        <Row>
+          <Col xs="12">
+            <H2>{uitext.totals}</H2>
           </Col>
         </Row>
         <Row>
@@ -119,12 +92,12 @@ export default CreatePage(
                         </td>
                         <td>
                           {ToCurrencyString(
-                            row.spend,
+                            row.total.spend,
                             uitext.locale,
                             uitext.currency_label
                           )}
                         </td>
-                        <GoodBadCurrencyCell number={row.diff} />
+                        <GoodBadCurrencyCell number={row.total.diff} />
                         <td>
                           <InvisibleButton
                             type="button"
@@ -133,6 +106,7 @@ export default CreatePage(
                               set_form_value({
                                 name: row.name,
                                 budget: row.budget,
+                                personal: row.personal,
                               });
                               set_editing(true);
                             }}
@@ -161,7 +135,7 @@ export default CreatePage(
                     <td>
                       {ToCurrencyString(
                         categories
-                          .map((c) => c.spend)
+                          .map((c) => c.total.spend)
                           .reduce((c, n) => c + n, 0),
                         uitext.locale,
                         uitext.currency_label
@@ -169,7 +143,7 @@ export default CreatePage(
                     </td>
                     <GoodBadCurrencyCell
                       number={categories
-                        .map((c) => c.diff)
+                        .map((c) => c.total.diff)
                         .reduce((c, n) => c + n, 0)}
                     />
                     <td />
@@ -192,6 +166,98 @@ export default CreatePage(
             <Card>
               <H2>{props.query.name}</H2>
               <Chart type={props.query.chart_type} data={props.query_result} />
+            </Card>
+          </Col>
+        </Row><Row>
+          <Col xs="12">
+            <H2>{uitext.personal}</H2>
+          </Col>
+        </Row>
+        <Row>
+          <Col xs="12">
+            <Card>
+              <Table rows={categories}>
+                <thead>
+                  <tr>
+                    <th>{uitext.category}</th>
+                    <th>{uitext.budget}</th>
+                    <th>{uitext.spend}</th>
+                    <th>{uitext.diff}</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <Table.Row>
+                    {(row) => (
+                      <>
+                        <td>{row.name}</td>
+                        <td>
+                          {ToCurrencyString(
+                            row.budget,
+                            uitext.locale,
+                            uitext.currency_label
+                          )}
+                        </td>
+                        <td>
+                          {ToCurrencyString(
+                            row.your.spend,
+                            uitext.locale,
+                            uitext.currency_label
+                          )}
+                        </td>
+                        <GoodBadCurrencyCell number={row.your.diff} />
+                        <td>
+                          <InvisibleButton
+                            type="button"
+                            onClick={() => {
+                              set_current(row.id);
+                              set_form_value({
+                                name: row.name,
+                                budget: row.budget,
+                                personal: row.personal,
+                              });
+                              set_editing(true);
+                            }}
+                          >
+                            <IconEdit
+                              colour="var(--body)"
+                              width="24"
+                              height="24"
+                            />
+                          </InvisibleButton>
+                        </td>
+                      </>
+                    )}
+                  </Table.Row>
+                  <HighlightRow>
+                    <td>{uitext.total}</td>
+                    <td>
+                      {ToCurrencyString(
+                        categories
+                          .map((c) => c.budget)
+                          .reduce((c, n) => c + n, 0),
+                        uitext.locale,
+                        uitext.currency_label
+                      )}
+                    </td>
+                    <td>
+                      {ToCurrencyString(
+                        categories
+                          .map((c) => c.your.spend)
+                          .reduce((c, n) => c + n, 0),
+                        uitext.locale,
+                        uitext.currency_label
+                      )}
+                    </td>
+                    <GoodBadCurrencyCell
+                      number={categories
+                        .map((c) => c.your.diff)
+                        .reduce((c, n) => c + n, 0)}
+                    />
+                    <td />
+                  </HighlightRow>
+                </tbody>
+              </Table>
             </Card>
           </Col>
         </Row>
@@ -224,7 +290,11 @@ export default CreatePage(
                 );
               } else {
                 const response = await ApiClient.Categories.Add(v);
-                const final = { ...response, spend: 0, diff: response.budget };
+                const final = {
+                  ...response,
+                  total: { spend: 0, diff: response.budget },
+                  your: { spend: 0, diff: response.budget },
+                };
                 set_categories((c) => [...c, final]);
               }
 
@@ -236,6 +306,7 @@ export default CreatePage(
             <Form.NumberInput name="budget" min={0} decimal_places={2}>
               {uitext.budget} ({uitext.currency})
             </Form.NumberInput>
+            <Form.Checkbox name="personal">{uitext.personal}</Form.Checkbox>
             <ThemeButton type="submit">{uitext.submit}</ThemeButton>
           </Form>
         </Modal>

@@ -35,3 +35,5 @@ export function FromJsDate(date: Date) {
     year: date.getFullYear(),
   };
 }
+
+export type Promised<T> = T extends Promise<infer A> ? A : unknown;

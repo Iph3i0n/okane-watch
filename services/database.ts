@@ -1,3 +1,4 @@
+import { Promised } from "$types/utility";
 import { Client } from "pg";
 
 export async function GetDb() {
@@ -13,7 +14,7 @@ export async function GetDb() {
 
   return {
     Query(sql: string, ...params: any[]) {
-      return new Promise<any[]>((res, rej) => {
+      return new Promise<unknown[]>((res, rej) => {
         db.query(sql, params, function (err, final) {
           if (err) rej(err);
           else res(final.rows);
@@ -25,3 +26,5 @@ export async function GetDb() {
     },
   };
 }
+
+export type Database = Promised<ReturnType<typeof GetDb>>;

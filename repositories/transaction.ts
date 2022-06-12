@@ -1,4 +1,3 @@
-import { GetDb } from "$services/database";
 import { Transaction } from "$types/transaction";
 import { v4 as Guid } from "uuid";
 import {
@@ -14,6 +13,10 @@ import {
   Optional,
 } from "@paulpopat/safe-type";
 import { DateObject, FromJsDate, ToJsDate } from "$types/utility";
+import { DatabaseContext } from "$contexts/database";
+import { CanPostTo, Get as GetCategory } from "./category";
+import { Get as GetPerson } from "./person";
+import { UserContext } from "$contexts/user";
 
 const IsTransactionDto = IsObject({
   id: IsString,
@@ -26,37 +29,42 @@ const IsTransactionDto = IsObject({
 
 type TransactionDto = IsType<typeof IsTransactionDto>;
 
-function FromDto(transaction: TransactionDto): Transaction {
+async function FromDto(transaction: TransactionDto) {
   return {
     id: transaction.id,
-    person: transaction.person,
-    category: transaction.category,
+    person: await GetPerson(transaction.person),
+    category: await GetCategory(transaction.category),
     description: transaction.description,
     amount: transaction.amount,
     when: FromJsDate(transaction.date),
   };
 }
 
-export async function Add(transaction: Omit<Transaction, "id">) {
+export async function Add(
+  transaction: Omit<Omit<Transaction, "id">, "person">
+) {
+  const user = UserContext.Use();
+  if (!(await CanPostTo(transaction.category)))
+    throw new Error("Permission denied");
+
+  const db = DatabaseContext.Use();
   const id = Guid();
-  const db = await GetDb();
   await db.Query(
     `INSERT INTO transactions(id, person, category, description, amount, date)
      VALUES ($1, $2, $3, $4, $5, $6)`,
     id,
-    transaction.person,
+    user.id,
     transaction.category,
     transaction.description,
     transaction.amount,
     ToJsDate(transaction.when)
   );
 
-  await db.End();
   return id;
 }
 
 export async function GetTransactions(from: DateObject, to: DateObject) {
-  const db = await GetDb();
+  const db = DatabaseContext.Use();
   const rows = await db.Query(
     `SELECT id, person, category, description, amount, date
      FROM transactions
@@ -66,9 +74,21 @@ export async function GetTransactions(from: DateObject, to: DateObject) {
     ToJsDate(to)
   );
 
-  await db.End();
   Assert(IsArray(IsTransactionDto), rows);
-  return rows.map(FromDto);
+  return await Promise.all(rows.map(FromDto));
+}
+
+export async function Get(id: string) {
+  const db = DatabaseContext.Use();
+  const rows = await db.Query(
+    `SELECT id, person, category, description, amount, date
+     FROM transactions
+     WHERE id = $1`,
+    id
+  );
+
+  Assert(IsTuple(IsTransactionDto), rows);
+  return await FromDto(rows[0]);
 }
 
 export async function GetTotalForCategory(
@@ -76,7 +96,7 @@ export async function GetTotalForCategory(
   from: DateObject,
   to: DateObject
 ) {
-  const db = await GetDb();
+  const db = DatabaseContext.Use();
   const rows = await db.Query(
     `SELECT SUM(amount) as total
      FROM transactions
@@ -86,13 +106,48 @@ export async function GetTotalForCategory(
     category_id
   );
 
-  await db.End();
-  Assert(IsTuple(IsObject({ total: Optional(IsUnion(IsNumber, IsString)) })), rows);
+  Assert(
+    IsTuple(IsObject({ total: Optional(IsUnion(IsNumber, IsString)) })),
+    rows
+  );
+  return parseFloat(rows[0].total?.toString() ?? "0");
+}
+
+export async function GetTotalForCategoryWIthCurrentUser(
+  category_id: string,
+  from: DateObject,
+  to: DateObject
+) {
+  const db = DatabaseContext.Use();
+  const user = UserContext.Use();
+  const rows = await db.Query(
+    `SELECT SUM(amount) as total
+     FROM transactions
+     WHERE date >= $1 AND date < $2 AND category = $3 AND person = $4`,
+    ToJsDate(from),
+    ToJsDate(to),
+    category_id,
+    user.id
+  );
+
+  Assert(
+    IsTuple(IsObject({ total: Optional(IsUnion(IsNumber, IsString)) })),
+    rows
+  );
   return parseFloat(rows[0].total?.toString() ?? "0");
 }
 
 export async function Update(id: string, transaction: Omit<Transaction, "id">) {
-  const db = await GetDb();
+  const user = UserContext.Use();
+  const existing = await Get(id);
+  if (
+    !existing ||
+    user.id !== existing.person.id ||
+    !(await CanPostTo(transaction.category))
+  )
+    throw new Error("Permission denied");
+
+  const db = DatabaseContext.Use();
   await db.Query(
     `UPDATE transactions
      SET person = $2,
@@ -109,17 +164,23 @@ export async function Update(id: string, transaction: Omit<Transaction, "id">) {
     ToJsDate(transaction.when)
   );
 
-  await db.End();
   return id;
 }
 
 export async function Delete(id: string) {
-  const db = await GetDb();
+  const user = UserContext.Use();
+  const existing = await Get(id);
+  if (
+    !existing ||
+    user.id !== existing.person.id ||
+    !(await CanPostTo(existing.category.id))
+  )
+    throw new Error("Permission denied");
+
+  const db = DatabaseContext.Use();
   await db.Query(
     `DELETE FROM transactions
      WHERE id = $1`,
     id
   );
-
-  await db.End();
 }

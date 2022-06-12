@@ -2,7 +2,7 @@ import React from "react";
 import { ThemeButton } from "$components/button";
 import FormFor from "$components/form";
 import { Col, Row } from "$components/layout";
-import CreatePage from "$services/page";
+import CreatePage from "$utils/page";
 import { IsObject, IsString } from "@paulpopat/safe-type";
 import ApiClient from "$services/api";
 import { useRouter } from "next/router";

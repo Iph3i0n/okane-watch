@@ -5,7 +5,7 @@ import Modal from "$components/modal";
 import TableFor from "$components/table";
 import { H1 } from "$components/text";
 import ApiClient from "$services/api";
-import CreatePage from "$services/page";
+import CreatePage from "$utils/page";
 import { IsPerson } from "$types/person";
 import FormFor from "$components/form";
 import { IsBoolean, IsObject, IsString } from "@paulpopat/safe-type";
