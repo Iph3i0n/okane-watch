@@ -1,7 +1,6 @@
 import { Assert, IsNumber, IsObject, IsString } from "@paulpopat/safe-type";
 import { Delete, Get, Update } from "$repositories/transaction";
 import { BuildApi } from "$utils/api";
-import { UserContext } from "$contexts/user";
 
 const IsQuery = IsObject({
   id: IsString,
