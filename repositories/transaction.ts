@@ -71,6 +71,19 @@ export async function GetTransactions(from: DateObject, to: DateObject) {
   return await Promise.all(rows.map(FromDto));
 }
 
+export async function Get(id: string) {
+  const db = DatabaseContext.Use();
+  const rows = await db.Query(
+    `SELECT id, person, category, description, amount, date
+     FROM transactions
+     WHERE id = $1`,
+    id
+  );
+
+  Assert(IsTuple(IsTransactionDto), rows);
+  return await FromDto(rows[0]);
+}
+
 export async function GetTotalForCategory(
   category_id: string,
   from: DateObject,

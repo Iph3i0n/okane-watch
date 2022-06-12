@@ -165,26 +165,12 @@ export default CreatePage(
                   { id: current },
                   { ...v, person: original.person.id }
                 );
-                const final = {
-                  ...response,
-                  person: original.person,
-                  category: props.categories.find(
-                    (c) => c.id === response.category
-                  ),
-                };
                 set_transactions((t) =>
-                  t.map((c) => (c.id === final.id ? final : c))
+                  t.map((c) => (c.id === response.id ? response : c))
                 );
               } else {
                 const response = await ApiClient.Transactions.Add(v);
-                const final = {
-                  ...response,
-                  person: user,
-                  category: props.categories.find(
-                    (c) => c.id === response.category
-                  ),
-                };
-                set_transactions((t) => [...t, final]);
+                set_transactions((t) => [...t, response]);
               }
 
               set_form_value(Form.default_value);

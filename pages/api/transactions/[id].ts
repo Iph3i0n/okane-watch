@@ -1,6 +1,7 @@
 import { Assert, IsNumber, IsObject, IsString } from "@paulpopat/safe-type";
-import { Delete, Update } from "$repositories/transaction";
+import { Delete, Get, Update } from "$repositories/transaction";
 import { BuildApi } from "$utils/api";
+import { UserContext } from "$contexts/user";
 
 const IsQuery = IsObject({
   id: IsString,
@@ -22,13 +23,10 @@ export default BuildApi({
       Assert(IsQuery, query);
       const body = req.body;
       Assert(IsPutBody, body);
-      const id = await Update(query.id, { ...body });
+      const id = await Update(query.id, body);
       return {
         status: 200,
-        body: {
-          ...body,
-          id,
-        },
+        body: await Get(id),
       };
     },
   },

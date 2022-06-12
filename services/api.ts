@@ -33,7 +33,7 @@ const ApiClient = Api(
           amount: IsNumber,
           when: IsDateObject,
         }),
-        returns: IsTransaction,
+        returns: IsCompleteTransaction,
       },
       Update: {
         method: "PUT",
@@ -46,7 +46,7 @@ const ApiClient = Api(
           amount: IsNumber,
           when: IsDateObject,
         }),
-        returns: IsTransaction,
+        returns: IsCompleteTransaction,
       },
       Delete: {
         method: "DELETE",
@@ -185,8 +185,8 @@ const ApiClient = Api(
 
       return v;
     },
-    on_error: (_, url) => {
-      return new Error("Error at " + url);
+    on_error: (err, url) => {
+      return err;
     },
   }
 );

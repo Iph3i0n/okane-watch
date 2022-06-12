@@ -1,6 +1,6 @@
 import { FromDateString } from "$types/utility";
 import { Assert, IsNumber, IsObject, IsString } from "@paulpopat/safe-type";
-import { Add, GetTransactions } from "$repositories/transaction";
+import { Add, Get, GetTransactions } from "$repositories/transaction";
 import { BuildApi } from "$utils/api";
 import { UserContext } from "$contexts/user";
 
@@ -41,10 +41,7 @@ export default BuildApi({
       const id = await Add({ ...body, person: user.id });
       return {
         status: 201,
-        body: {
-          ...body,
-          id,
-        },
+        body: await Get(id),
       };
     },
   },
