@@ -42,3 +42,7 @@ TODO:
 - [ ] Dept management
 - [ ] Budget after bills
 - [ ] Your account
+
+## Aspirations
+
+One day we would love this to use OpenBanking and work as a budget management tool that would be useful for everyone!
