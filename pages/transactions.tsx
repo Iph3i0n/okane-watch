@@ -43,7 +43,7 @@ export default CreatePage(
   async (ctx) => {
     return {
       transactions: await ApiClient.Transactions.GetMonth(GetDateRange(ctx)),
-      categories: await ApiClient.Categories.GetAll(),
+      categories: await ApiClient.Categories.GetOptions(),
     };
   },
   (props) => {
@@ -92,37 +92,41 @@ export default CreatePage(
                           )}
                         </td>
                         <td>
-                          <InvisibleButton
-                            type="button"
-                            onClick={() => {
-                              set_current(row.id);
-                              set_form_value({
-                                when: row.when,
-                                description: row.description,
-                                category: row.category.id,
-                                amount: row.amount,
-                              });
-                              set_editing(true);
-                            }}
-                          >
-                            <IconEdit
-                              colour="var(--body)"
-                              width="24"
-                              height="24"
-                            />
-                          </InvisibleButton>
-                          <InvisibleButton
-                            type="button"
-                            onClick={() => {
-                              set_deleting(row.id);
-                            }}
-                          >
-                            <IconDelete
-                              colour="var(--body)"
-                              width="24"
-                              height="24"
-                            />
-                          </InvisibleButton>
+                          {user.id === row.person.id && (
+                            <>
+                              <InvisibleButton
+                                type="button"
+                                onClick={() => {
+                                  set_current(row.id);
+                                  set_form_value({
+                                    when: row.when,
+                                    description: row.description,
+                                    category: row.category.id,
+                                    amount: row.amount,
+                                  });
+                                  set_editing(true);
+                                }}
+                              >
+                                <IconEdit
+                                  colour="var(--body)"
+                                  width="24"
+                                  height="24"
+                                />
+                              </InvisibleButton>
+                              <InvisibleButton
+                                type="button"
+                                onClick={() => {
+                                  set_deleting(row.id);
+                                }}
+                              >
+                                <IconDelete
+                                  colour="var(--body)"
+                                  width="24"
+                                  height="24"
+                                />
+                              </InvisibleButton>
+                            </>
+                          )}
                         </td>
                       </>
                     )}

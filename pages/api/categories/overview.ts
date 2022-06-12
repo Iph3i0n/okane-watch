@@ -1,12 +1,7 @@
-import { Assert, IsNumber, IsObject, IsString } from "@paulpopat/safe-type";
-import { Add, GetOverview } from "$repositories/category";
+import { Assert, IsObject, IsString } from "@paulpopat/safe-type";
+import { GetOverview } from "$repositories/category";
 import { BuildApi } from "$utils/api";
 import { FromDateString } from "$types/utility";
-
-const IsPost = IsObject({
-  name: IsString,
-  budget: IsNumber,
-});
 
 const IsGet = IsObject({
   from: IsString,

@@ -107,6 +107,11 @@ const ApiClient = Api(
         url: "/api/categories",
         returns: IsArray(IsCategory),
       },
+      GetOptions: {
+        method: "GET",
+        url: "/api/categories/options",
+        returns: IsArray(IsCategory),
+      },
       GetOverview: {
         method: "GET",
         url: "/api/categories/overview",

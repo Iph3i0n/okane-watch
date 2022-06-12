@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsIntersection,
   IsNumber,
   IsObject,
@@ -10,13 +11,15 @@ export const IsCategory = IsObject({
   id: IsString,
   name: IsString,
   budget: IsNumber,
+  personal: IsBoolean,
 });
 
 export type Category = IsType<typeof IsCategory>;
 
+export const IsSpend = IsObject({ spend: IsNumber, diff: IsNumber });
 export const IsSummaryCategory = IsIntersection(
   IsCategory,
-  IsObject({ spend: IsNumber, diff: IsNumber })
+  IsObject({ total: IsSpend, your: IsSpend })
 );
 
 export type SummaryCategory = IsType<typeof IsSummaryCategory>;

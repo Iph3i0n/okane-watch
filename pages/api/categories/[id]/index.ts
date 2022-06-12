@@ -1,4 +1,4 @@
-import { Assert, IsNumber, IsObject, IsString } from "@paulpopat/safe-type";
+import { Assert, IsBoolean, IsNumber, IsObject, IsString } from "@paulpopat/safe-type";
 import { Update, Get } from "$repositories/category";
 import { BuildApi } from "$utils/api";
 
@@ -9,6 +9,7 @@ const IsQuery = IsObject({
 const IsPutBody = IsObject({
   name: IsString,
   budget: IsNumber,
+  personal: IsBoolean,
 });
 
 export default BuildApi({

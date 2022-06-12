@@ -37,8 +37,7 @@ export default BuildApi({
     proc: async (req) => {
       const body = req.body;
       Assert(IsPost, body);
-      const user = UserContext.Use();
-      const id = await Add({ ...body, person: user.id });
+      const id = await Add({ ...body });
       return {
         status: 201,
         body: await Get(id),

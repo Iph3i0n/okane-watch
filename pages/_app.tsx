@@ -1,3 +1,4 @@
+import { ThemeButton } from "$components/button";
 import { SelectDate } from "$components/form";
 import { UserProvider } from "$contexts/react-user";
 import { UiTextProvider } from "$contexts/uitext";
@@ -5,7 +6,7 @@ import ApiClient from "$services/api";
 import { User } from "$types/person";
 import { DateObject, ToDateString } from "$types/utility";
 import C from "$utils/class-name";
-import { OverrideOptions } from "$utils/cookies";
+import { ClearAuth, OverrideOptions } from "$utils/cookies";
 import { GetDateRangeObjects } from "$utils/date-range";
 import { UpdateQueryString } from "$utils/url";
 import App, { AppContext, AppInitialProps } from "next/app";
@@ -13,6 +14,7 @@ import Head from "next/head";
 import Link from "next/link";
 import Styled from "styled-components";
 import { Container } from "../components/layout";
+
 import "../styles/app.css";
 
 const Header = Styled.header`
@@ -31,9 +33,9 @@ const Header = Styled.header`
     margin-left: 3rem;
   }
 
-  .date-selector {
+  .right-panel {
     display: grid;
-    grid-template-columns: auto auto;
+    grid-template-columns: auto auto auto;
     gap: var(--block-padding);
 
     input {
@@ -125,7 +127,7 @@ export default class MyApp extends App<MyAppProps, {}, { loading: boolean }> {
                 </Link>
                 <Link href="/people">{this.props.uitext.people}</Link>
               </nav>
-              <div className="date-selector">
+              <div className="right-panel">
                 <SelectDate
                   date={this.props.range.from}
                   set_date={(d) => UpdateQueryString("from", ToDateString(d))}
@@ -138,6 +140,11 @@ export default class MyApp extends App<MyAppProps, {}, { loading: boolean }> {
                 >
                   {this.props.uitext.to}
                 </SelectDate>
+                {this.props.user && (
+                  <ThemeButton type="button" onClick={ClearAuth}>
+                    {this.props.uitext.logout}
+                  </ThemeButton>
+                )}
               </div>
             </Container>
           </Header>
