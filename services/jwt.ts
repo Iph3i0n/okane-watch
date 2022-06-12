@@ -1,9 +1,9 @@
 import { GetUserPermissions } from "$repositories/permissions";
 import { Get } from "$repositories/person";
-import { Person } from "$types/person";
 import {
   Assert,
   IsArray,
+  IsNumber,
   IsObject,
   IsString,
   IsType,
@@ -16,6 +16,8 @@ const Expires = 60 * 30;
 const IsPayload = IsObject({
   permissions: IsArray(IsString),
   user_id: IsString,
+  iat: IsNumber,
+  exp: IsNumber,
 });
 
 type Payload = IsType<typeof IsPayload>;
@@ -49,7 +51,7 @@ export function Generate(user_id: string) {
   });
 }
 
-export async function Can(token: string, check: string) {
+export async function IsAble(token: string, check: string) {
   const payload = await Verify(token);
   return payload.permissions.includes(check);
 }

@@ -2,7 +2,7 @@ import Config from "$queries/config.json";
 import { pg } from "yesql";
 import Fs from "fs-extra";
 import Path from "path";
-import { GetDb } from "$services/database";
+import { DatabaseContext } from "$contexts/database";
 
 type PossibleParameters = {
   from_date?: string;
@@ -22,11 +22,11 @@ export async function Execute(slug: string, parameters: PossibleParameters) {
     if (!parameters[key]) throw new Error("Missing parameter data");
   }
 
+  const db = DatabaseContext.Use();
   const query = await Fs.readFile(
     Path.join(".", "queries", slug + ".sql"),
     "utf-8"
   );
-  const db = await GetDb();
 
   const final_query = pg(query)(parameters);
   const response = await db.Query(final_query.text, ...final_query.values);

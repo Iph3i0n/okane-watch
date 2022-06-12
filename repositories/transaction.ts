@@ -1,4 +1,3 @@
-import { GetDb } from "$services/database";
 import { Transaction } from "$types/transaction";
 import { v4 as Guid } from "uuid";
 import {
@@ -14,6 +13,7 @@ import {
   Optional,
 } from "@paulpopat/safe-type";
 import { DateObject, FromJsDate, ToJsDate } from "$types/utility";
+import { DatabaseContext } from "$contexts/database";
 
 const IsTransactionDto = IsObject({
   id: IsString,
@@ -38,8 +38,8 @@ function FromDto(transaction: TransactionDto): Transaction {
 }
 
 export async function Add(transaction: Omit<Transaction, "id">) {
+  const db = DatabaseContext.Use();
   const id = Guid();
-  const db = await GetDb();
   await db.Query(
     `INSERT INTO transactions(id, person, category, description, amount, date)
      VALUES ($1, $2, $3, $4, $5, $6)`,
@@ -51,12 +51,11 @@ export async function Add(transaction: Omit<Transaction, "id">) {
     ToJsDate(transaction.when)
   );
 
-  await db.End();
   return id;
 }
 
 export async function GetTransactions(from: DateObject, to: DateObject) {
-  const db = await GetDb();
+  const db = DatabaseContext.Use();
   const rows = await db.Query(
     `SELECT id, person, category, description, amount, date
      FROM transactions
@@ -66,7 +65,6 @@ export async function GetTransactions(from: DateObject, to: DateObject) {
     ToJsDate(to)
   );
 
-  await db.End();
   Assert(IsArray(IsTransactionDto), rows);
   return rows.map(FromDto);
 }
@@ -76,7 +74,7 @@ export async function GetTotalForCategory(
   from: DateObject,
   to: DateObject
 ) {
-  const db = await GetDb();
+  const db = DatabaseContext.Use();
   const rows = await db.Query(
     `SELECT SUM(amount) as total
      FROM transactions
@@ -86,13 +84,15 @@ export async function GetTotalForCategory(
     category_id
   );
 
-  await db.End();
-  Assert(IsTuple(IsObject({ total: Optional(IsUnion(IsNumber, IsString)) })), rows);
+  Assert(
+    IsTuple(IsObject({ total: Optional(IsUnion(IsNumber, IsString)) })),
+    rows
+  );
   return parseFloat(rows[0].total?.toString() ?? "0");
 }
 
 export async function Update(id: string, transaction: Omit<Transaction, "id">) {
-  const db = await GetDb();
+  const db = DatabaseContext.Use();
   await db.Query(
     `UPDATE transactions
      SET person = $2,
@@ -109,17 +109,14 @@ export async function Update(id: string, transaction: Omit<Transaction, "id">) {
     ToJsDate(transaction.when)
   );
 
-  await db.End();
   return id;
 }
 
 export async function Delete(id: string) {
-  const db = await GetDb();
+  const db = DatabaseContext.Use();
   await db.Query(
     `DELETE FROM transactions
      WHERE id = $1`,
     id
   );
-
-  await db.End();
 }
