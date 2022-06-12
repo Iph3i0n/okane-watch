@@ -38,6 +38,7 @@ services:
 TODO:
 
 - [ ] Tags
+- [ ] Transaction Filtering
 - [ ] Import from CSV
 - [ ] Dept management
 - [ ] Budget after bills

@@ -13,7 +13,7 @@ import TableFor, {
   GoodBadCurrencyCell,
   HighlightRow,
 } from "../components/table";
-import { H1, H2 } from "../components/text";
+import { Badge, H1, H2 } from "../components/text";
 import ApiClient from "../services/api";
 import CreatePage from "../utils/page";
 import { IsSummaryCategory } from "../types/category";
@@ -66,7 +66,15 @@ export default CreatePage(
           </Col>
         </Row>
         <Row>
-          <Col xs="12" lg="6">
+          <Col xs="12">
+            <Card>
+              <H2>{props.query.name}</H2>
+              <Chart type={props.query.chart_type} data={props.query_result} />
+            </Card>
+          </Col>
+        </Row>
+        <Row>
+          <Col xs="12">
             <Card>
               <Table rows={categories}>
                 <thead>
@@ -75,6 +83,7 @@ export default CreatePage(
                     <th>{uitext.budget}</th>
                     <th>{uitext.spend}</th>
                     <th>{uitext.diff}</th>
+                    <th>{uitext.personal}</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -82,7 +91,12 @@ export default CreatePage(
                   <Table.Row>
                     {(row) => (
                       <>
-                        <td>{row.name}</td>
+                        <td>
+                          {row.personal && (
+                            <Badge>{uitext.personal_badge}</Badge>
+                          )}
+                          {row.name}
+                        </td>
                         <td>
                           {ToCurrencyString(
                             row.budget,
@@ -98,6 +112,13 @@ export default CreatePage(
                           )}
                         </td>
                         <GoodBadCurrencyCell number={row.total.diff} />
+                        <td>
+                          {ToCurrencyString(
+                            row.your.spend,
+                            uitext.locale,
+                            uitext.currency_label
+                          )}
+                        </td>
                         <td>
                           <InvisibleButton
                             type="button"
@@ -146,6 +167,15 @@ export default CreatePage(
                         .map((c) => c.total.diff)
                         .reduce((c, n) => c + n, 0)}
                     />
+                    <td>
+                      {ToCurrencyString(
+                        categories
+                          .map((c) => c.your.spend)
+                          .reduce((c, n) => c + n, 0),
+                        uitext.locale,
+                        uitext.currency_label
+                      )}
+                    </td>
                     <td />
                   </HighlightRow>
                 </tbody>
@@ -160,104 +190,6 @@ export default CreatePage(
               >
                 {uitext.add}
               </ThemeButton>
-            </Card>
-          </Col>
-          <Col xs="12" lg="6">
-            <Card>
-              <H2>{props.query.name}</H2>
-              <Chart type={props.query.chart_type} data={props.query_result} />
-            </Card>
-          </Col>
-        </Row><Row>
-          <Col xs="12">
-            <H2>{uitext.personal}</H2>
-          </Col>
-        </Row>
-        <Row>
-          <Col xs="12">
-            <Card>
-              <Table rows={categories}>
-                <thead>
-                  <tr>
-                    <th>{uitext.category}</th>
-                    <th>{uitext.budget}</th>
-                    <th>{uitext.spend}</th>
-                    <th>{uitext.diff}</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <Table.Row>
-                    {(row) => (
-                      <>
-                        <td>{row.name}</td>
-                        <td>
-                          {ToCurrencyString(
-                            row.budget,
-                            uitext.locale,
-                            uitext.currency_label
-                          )}
-                        </td>
-                        <td>
-                          {ToCurrencyString(
-                            row.your.spend,
-                            uitext.locale,
-                            uitext.currency_label
-                          )}
-                        </td>
-                        <GoodBadCurrencyCell number={row.your.diff} />
-                        <td>
-                          <InvisibleButton
-                            type="button"
-                            onClick={() => {
-                              set_current(row.id);
-                              set_form_value({
-                                name: row.name,
-                                budget: row.budget,
-                                personal: row.personal,
-                              });
-                              set_editing(true);
-                            }}
-                          >
-                            <IconEdit
-                              colour="var(--body)"
-                              width="24"
-                              height="24"
-                            />
-                          </InvisibleButton>
-                        </td>
-                      </>
-                    )}
-                  </Table.Row>
-                  <HighlightRow>
-                    <td>{uitext.total}</td>
-                    <td>
-                      {ToCurrencyString(
-                        categories
-                          .map((c) => c.budget)
-                          .reduce((c, n) => c + n, 0),
-                        uitext.locale,
-                        uitext.currency_label
-                      )}
-                    </td>
-                    <td>
-                      {ToCurrencyString(
-                        categories
-                          .map((c) => c.your.spend)
-                          .reduce((c, n) => c + n, 0),
-                        uitext.locale,
-                        uitext.currency_label
-                      )}
-                    </td>
-                    <GoodBadCurrencyCell
-                      number={categories
-                        .map((c) => c.your.diff)
-                        .reduce((c, n) => c + n, 0)}
-                    />
-                    <td />
-                  </HighlightRow>
-                </tbody>
-              </Table>
             </Card>
           </Col>
         </Row>
