@@ -21,7 +21,7 @@ services:
       - ./pg-data:/var/lib/postgresql/data
 
   okane-watch:
-    image: paulpopat/okane-watch:latest
+    image: iph3i0n/okane-watch:latest
     restart: unless-stopped
     environment:
       SITE_URL: https://www.your-domain.com/
@@ -34,3 +34,11 @@ services:
       ADMIN_PASSWORD: password
       JWT_SECRET: EXAMPLE_SECRET_KEY
 ```
+
+TODO:
+
+- [ ] Tags
+- [ ] Import from CSV
+- [ ] Dept management
+- [ ] Budget after bills
+- [ ] Your account
