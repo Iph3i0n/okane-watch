@@ -21,6 +21,8 @@ import { IsCompleteTransaction } from "../types/transaction";
 import { Year, Month, Day } from "../utils/constants";
 import { ToCurrencyString } from "../utils/number";
 import { UpdateQueryString } from "$utils/url";
+import { Paginator } from "$components/paginator";
+import { useRouter } from "next/router";
 
 const Table = TableFor(IsCompleteTransaction);
 
@@ -46,19 +48,29 @@ export default CreatePage(
       ctx.query.person === "all"
         ? undefined
         : ctx.query.person?.toString() ?? ctx.user?.id;
+    const skip = ctx.query.skip?.toString() ?? "0";
+    const take = ctx.query.take?.toString() ?? "10";
+    console.log(skip, take);
+    const transactions = await ApiClient.Transactions.GetList({
+      ...GetDateRange(ctx),
+      category: category,
+      person: person,
+      skip,
+      take,
+    });
     return {
-      transactions: await ApiClient.Transactions.GetList({
-        ...GetDateRange(ctx),
-        category: category,
-        person: person,
-      }),
+      transactions: transactions.data,
+      transaction_count: transactions.total,
       categories: await ApiClient.Categories.GetOptions(),
       people: await ApiClient.People.GetAll(),
       person,
       category,
+      skip: parseInt(skip),
+      take: parseInt(take),
     };
   },
   (props) => {
+    const router = useRouter();
     const uitext = UseUiText();
     const user = UseCurrentUser();
     const [transactions, set_transactions] = React.useState(props.transactions);
@@ -66,6 +78,11 @@ export default CreatePage(
     const [current, set_current] = React.useState("");
     const [form_value, set_form_value] = React.useState(Form.default_value);
     const [deleting, set_deleting] = React.useState("");
+
+    React.useEffect(
+      () => set_transactions(props.transactions),
+      [props.transactions]
+    );
 
     return (
       <>
@@ -76,7 +93,7 @@ export default CreatePage(
           <Col xs="12" md="4">
             <Dropdown
               value={props.person ?? "all"}
-              set_value={(v) => UpdateQueryString("person", v)}
+              set_value={(v) => UpdateQueryString(router, ["person", v])}
               label={uitext.person}
             >
               <option value="all">{uitext.all}</option>
@@ -90,7 +107,7 @@ export default CreatePage(
           <Col xs="12" md="4">
             <Dropdown
               value={props.category ?? ""}
-              set_value={(v) => UpdateQueryString("category", v)}
+              set_value={(v) => UpdateQueryString(router, ["category", v])}
               label={uitext.category}
             >
               <option value="">{uitext.all}</option>
@@ -180,7 +197,21 @@ export default CreatePage(
           </Col>
         </Row>
         <Row>
-          <Col xs="12">
+          <Col xs="12" md="8">
+            <Paginator
+              skip={props.skip}
+              take={props.take}
+              total={props.transaction_count}
+              set_values={(skip, take) =>
+                UpdateQueryString(
+                  router,
+                  ["skip", skip.toString()],
+                  ["take", take.toString()]
+                )
+              }
+            />
+          </Col>
+          <Col xs="12" md="4">
             <ThemeButton
               type="button"
               onClick={() => {

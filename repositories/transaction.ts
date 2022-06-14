@@ -4,6 +4,7 @@ import {
   Assert,
   IsArray,
   IsDate,
+  IsIntersection,
   IsNumber,
   IsObject,
   IsString,
@@ -69,26 +70,42 @@ export async function GetTransactions(
   from: DateObject,
   to: DateObject,
   user_id: string | undefined,
-  category_id: string | undefined
+  category_id: string | undefined,
+  skip: number,
+  take: number
 ) {
   const db = DatabaseContext.Use();
   const rows = await db.Query(
-    `SELECT id, person, category, description, amount, date
+    `SELECT id, person, category, description, amount, date, count(*) OVER() AS full_count
      FROM transactions
      WHERE date >= :from_date AND date < :to_date ${
        user_id ? "AND person = :person" : ""
      } ${category_id ? "AND category = :category" : ""}
-     ORDER BY date DESC, person DESC, description DESC`,
+     ORDER BY date DESC, person DESC, description DESC
+     LIMIT :take OFFSET :skip`,
     {
       from_date: ToJsDate(from),
       to_date: ToJsDate(to),
       person: user_id,
       category: category_id,
+      skip,
+      take,
     }
   );
 
-  Assert(IsArray(IsTransactionDto), rows);
-  return await Promise.all(rows.map(FromDto));
+  Assert(
+    IsArray(
+      IsIntersection(IsTransactionDto, IsObject({ full_count: IsString }))
+    ),
+    rows
+  );
+
+  if (rows.length === 0) return { total: 0, data: [] };
+
+  return {
+    total: parseInt(rows[0].full_count),
+    data: await Promise.all(rows.map(FromDto)),
+  };
 }
 
 export async function Get(id: string) {

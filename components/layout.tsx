@@ -2,6 +2,8 @@ import C from "$utils/class-name";
 import React from "react";
 import Styled from "styled-components";
 
+const ColContext = React.createContext(0);
+
 const ColumnCount = 12;
 type Cols =
   | "1"
@@ -46,6 +48,8 @@ const Card = Styled.div`
   background: var(--bg-surface);
   border-radius: var(--border-radius);
   padding: var(--block-padding);
+  height: 100%;
+  box-sizing: border-box;
 
   animation: card-fade-in 500ms;
 
@@ -61,6 +65,7 @@ const Card = Styled.div`
 
 export const ColBase = Styled.div`
   position: relative;
+  height: 100%;
 
   ${Object.keys(BreakPoints)
     .map(
@@ -82,6 +87,8 @@ export const ColBase = Styled.div`
 `;
 
 export const Col: React.C<ColProps> = (props) => {
+  const depth = React.useContext(ColContext);
+
   return (
     <ColBase
       className={C(
@@ -90,7 +97,9 @@ export const Col: React.C<ColProps> = (props) => {
           .map((k) => `${k}-${props[k]}`)
       )}
     >
-      <Card>{props.children}</Card>
+      <ColContext.Provider value={depth + 1}>
+        {depth === 0 ? <Card>{props.children}</Card> : <>{props.children}</>}
+      </ColContext.Provider>
     </ColBase>
   );
 };

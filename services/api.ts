@@ -26,8 +26,13 @@ const ApiClient = Api(
           to: IsString,
           person: Optional(IsString),
           category: Optional(IsString),
+          skip: IsString,
+          take: IsString,
         },
-        returns: IsArray(IsCompleteTransaction),
+        returns: IsObject({
+          total: IsNumber,
+          data: IsArray(IsCompleteTransaction),
+        }),
       },
       Add: {
         method: "POST",

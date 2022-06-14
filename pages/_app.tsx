@@ -18,9 +18,14 @@ import { Container } from "../components/layout";
 import "../styles/app.css";
 
 const Header = Styled.header`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
   padding: 1rem;
   background: var(--bg-surface);
   margin-bottom: 2rem;
+  z-index: 1;
 
   main {
     display: flex;
@@ -130,13 +135,23 @@ export default class MyApp extends App<MyAppProps, {}, { loading: boolean }> {
               <div className="right-panel">
                 <SelectDate
                   date={this.props.range.from}
-                  set_date={(d) => UpdateQueryString("from", ToDateString(d))}
+                  set_date={(d) =>
+                    UpdateQueryString(this.props.router, [
+                      "from",
+                      ToDateString(d),
+                    ])
+                  }
                 >
                   {this.props.uitext.from}
                 </SelectDate>
                 <SelectDate
                   date={this.props.range.to}
-                  set_date={(d) => UpdateQueryString("to", ToDateString(d))}
+                  set_date={(d) =>
+                    UpdateQueryString(this.props.router, [
+                      "to",
+                      ToDateString(d),
+                    ])
+                  }
                 >
                   {this.props.uitext.to}
                 </SelectDate>

@@ -21,6 +21,8 @@ const IsGet = IsObject({
   to: IsString,
   person: Optional(IsString),
   category: Optional(IsString),
+  skip: IsString,
+  take: IsString,
 });
 
 export default BuildApi({
@@ -36,7 +38,9 @@ export default BuildApi({
           FromDateString(query.from),
           FromDateString(query.to),
           query.person,
-          query.category
+          query.category,
+          parseInt(query.skip),
+          parseInt(query.take)
         ),
       };
     },
