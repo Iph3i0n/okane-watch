@@ -1,8 +1,13 @@
 import { FromDateString } from "$types/utility";
-import { Assert, IsNumber, IsObject, IsString } from "@paulpopat/safe-type";
+import {
+  Assert,
+  IsNumber,
+  IsObject,
+  IsString,
+  Optional,
+} from "@paulpopat/safe-type";
 import { Add, Get, GetTransactions } from "$repositories/transaction";
 import { BuildApi } from "$utils/api";
-import { UserContext } from "$contexts/user";
 
 const IsPost = IsObject({
   category: IsString,
@@ -14,6 +19,8 @@ const IsPost = IsObject({
 const IsGet = IsObject({
   from: IsString,
   to: IsString,
+  person: Optional(IsString),
+  category: Optional(IsString),
 });
 
 export default BuildApi({
@@ -27,7 +34,9 @@ export default BuildApi({
         status: 200,
         body: await GetTransactions(
           FromDateString(query.from),
-          FromDateString(query.to)
+          FromDateString(query.to),
+          query.person,
+          query.category
         ),
       };
     },

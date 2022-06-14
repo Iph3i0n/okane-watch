@@ -18,10 +18,15 @@ import { GetAuth } from "$utils/cookies";
 const ApiClient = Api(
   {
     Transactions: {
-      GetMonth: {
+      GetList: {
         method: "GET",
         url: "/api/transactions",
-        parameters: { from: IsString, to: IsString },
+        parameters: {
+          from: IsString,
+          to: IsString,
+          person: Optional(IsString),
+          category: Optional(IsString),
+        },
         returns: IsArray(IsCompleteTransaction),
       },
       Add: {

@@ -10,7 +10,6 @@ import { IsPerson } from "$types/person";
 import FormFor from "$components/form";
 import { IsBoolean, IsObject, IsString } from "@paulpopat/safe-type";
 import { UseUiText } from "$contexts/uitext";
-import { Card } from "$components/card";
 import { Col, Row } from "$components/layout";
 
 const Table = TableFor(IsPerson);
@@ -46,47 +45,45 @@ export default CreatePage(
         </Row>
         <Row>
           <Col xs="12">
-            <Card>
-              <Table rows={people}>
-                <thead>
-                  <tr>
-                    <th>{uitext.name}</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <Table.Row>
-                    {(row) => (
-                      <>
-                        <td>{row.name}</td>
-                        <td>
-                          <InvisibleButton
-                            type="button"
-                            onClick={async () => {
-                              set_current(row.id);
-                              set_form_value({
-                                name: row.name,
-                                password: "",
-                                is_admin: (
-                                  await ApiClient.People.IsAdmin({ id: row.id })
-                                ).is_admin,
-                              });
-                              set_editing(true);
-                            }}
-                          >
-                            <IconEdit
-                              colour="var(--body)"
-                              width="24"
-                              height="24"
-                            />
-                          </InvisibleButton>
-                        </td>
-                      </>
-                    )}
-                  </Table.Row>
-                </tbody>
-              </Table>
-            </Card>
+            <Table rows={people}>
+              <thead>
+                <tr>
+                  <th>{uitext.name}</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <Table.Row>
+                  {(row) => (
+                    <>
+                      <td>{row.name}</td>
+                      <td>
+                        <InvisibleButton
+                          type="button"
+                          onClick={async () => {
+                            set_current(row.id);
+                            set_form_value({
+                              name: row.name,
+                              password: "",
+                              is_admin: (
+                                await ApiClient.People.IsAdmin({ id: row.id })
+                              ).is_admin,
+                            });
+                            set_editing(true);
+                          }}
+                        >
+                          <IconEdit
+                            colour="var(--body)"
+                            width="24"
+                            height="24"
+                          />
+                        </InvisibleButton>
+                      </td>
+                    </>
+                  )}
+                </Table.Row>
+              </tbody>
+            </Table>
           </Col>
         </Row>
         <Row>

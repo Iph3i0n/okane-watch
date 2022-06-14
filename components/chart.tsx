@@ -7,11 +7,24 @@ import {
   IsType,
 } from "@paulpopat/safe-type";
 import React from "react";
-import { Cell, Legend, Pie, PieChart } from "recharts";
+import {
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  LineChart,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Line,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import Styled from "styled-components";
 
 const ChartDataTypes = {
   pie: IsArray(IsObject({ key: IsString, value: IsNumber })),
+  line: IsArray(IsObject({ key: IsString, value: IsNumber })),
 };
 
 type TChartData = typeof ChartDataTypes;
@@ -30,13 +43,15 @@ const Colours = [
   "var(--rainbow-0)",
 ];
 
+const Size = [500, 400] as const;
+
 const ChartTypes: {
   [TKey in keyof TChartData]: React.FC<{ data: TChartDataTypes<TKey> }>;
 } = {
   pie: ({ data }) => {
     const [highlight, set_highlight] = React.useState("");
     return (
-      <PieChart width={400} height={400}>
+      <PieChart width={Size[0]} height={Size[1]}>
         <Pie
           dataKey="value"
           isAnimationActive={true}
@@ -69,6 +84,17 @@ const ChartTypes: {
       </PieChart>
     );
   },
+  line: ({ data }) => {
+    return (
+      <LineChart
+        width={Size[0]}
+        height={Size[1]}
+        data={data.map((d) => ({ name: d.key, value: d.value }))}
+      >
+        <Line type="monotone" strokeWidth="2" dataKey="value" stroke={Colours[0]} />
+      </LineChart>
+    );
+  },
 };
 
 const ChartContainer = Styled.div`
@@ -85,7 +111,9 @@ export const Chart: React.FC<{ type: string; data: unknown }> = ({
   Assert(ChartDataTypes[type], data);
   return (
     <ChartContainer>
-      {React.createElement(ChartTypes[type], { data })}
+      <ResponsiveContainer width="100%" height="100%">
+        {React.createElement(ChartTypes[type], { data })}
+      </ResponsiveContainer>
     </ChartContainer>
   );
 };

@@ -1,5 +1,6 @@
 import { Promised } from "$types/utility";
 import { Client } from "pg";
+import { pg } from "yesql";
 
 export async function GetDb() {
   const db = new Client({
@@ -13,9 +14,10 @@ export async function GetDb() {
   await db.connect();
 
   return {
-    Query(sql: string, ...params: any[]) {
+    Query(sql: string, params?: Record<string, any>) {
+      const query = pg(sql)(params ?? {});
       return new Promise<unknown[]>((res, rej) => {
-        db.query(sql, params, function (err, final) {
+        db.query(query.text, query.values, function (err, final) {
           if (err) rej(err);
           else res(final.rows);
         });

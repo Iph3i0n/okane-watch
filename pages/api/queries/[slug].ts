@@ -18,7 +18,7 @@ export default BuildApi({
       Assert(IsQuery, query);
       return {
         status: 200,
-        body: await Execute(query.slug, query),
+        body: await Execute(query.slug as any, query),
       };
     },
   },

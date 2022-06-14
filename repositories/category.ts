@@ -76,9 +76,9 @@ export async function GetOptions() {
   const rows = await db.Query(
     `SELECT id, name, budget, person
      FROM categories
-     WHERE person = $1 OR person IS NULL
+     WHERE person = :id OR person IS NULL
      ORDER BY name ASC`,
-    user.id
+    { id: user.id }
   );
 
   Assert(IsArray(IsCategoryDto), rows);
@@ -91,9 +91,9 @@ export async function CanPostTo(category_id: string) {
   const rows = await db.Query(
     `SELECT id, name, budget, person
      FROM categories
-     WHERE person = $1 OR person IS NULL
+     WHERE person = :id OR person IS NULL
      ORDER BY name ASC`,
-    user.id
+    { id: user.id }
   );
 
   Assert(IsArray(IsCategoryDto), rows);
@@ -106,9 +106,9 @@ export async function GetOverview(from: DateObject, to: DateObject) {
   const rows = await db.Query(
     `SELECT id, name, budget, person
      FROM categories
-     WHERE person = $1 OR person IS NULL
+     WHERE person = :id OR person IS NULL
      ORDER BY name ASC`,
-    user.id
+    { id: user.id }
   );
 
   Assert(IsArray(IsCategoryDto), rows);
@@ -118,8 +118,8 @@ export async function GetOverview(from: DateObject, to: DateObject) {
 export async function Get(id: string) {
   const db = DatabaseContext.Use();
   const rows = await db.Query(
-    `SELECT id, name, budget, person FROM categories WHERE id = $1`,
-    id
+    `SELECT id, name, budget, person FROM categories WHERE id = :id`,
+    { id }
   );
 
   Assert(IsTuple(IsCategoryDto), rows);
@@ -132,18 +132,15 @@ export async function Add(name: string, budget: number, personal: boolean) {
   const id = Guid();
   if (personal)
     await db.Query(
-      `INSERT INTO categories(id, name, budget, person) VALUES ($1, $2, $3, $4)`,
-      id,
-      name,
-      budget,
-      user.id
+      `INSERT INTO categories(id, name, budget, person)
+       VALUES (:id, :name, :budget, :user_id)`,
+      { id, name, budget, user_id: user.id }
     );
   else
     await db.Query(
-      `INSERT INTO categories(id, name, budget) VALUES ($1, $2, $3)`,
-      id,
-      name,
-      budget
+      `INSERT INTO categories(id, name, budget)
+       VALUES (:id, :name, :budget)`,
+      { id, name, budget }
     );
 
   return id;
@@ -156,25 +153,20 @@ export async function Update(id: string, subject: Omit<Category, "id">) {
   if (subject.personal)
     await db.Query(
       `UPDATE categories
-       SET name = $2,
-           budget = $3,
-           person = $4
-       WHERE id = $1`,
-      id,
-      subject.name,
-      subject.budget,
-      user.id
+       SET name = :name,
+           budget = :budget,
+           person = :person
+       WHERE id = :id`,
+      { id, name: subject.name, budget: subject.budget, user_id: user.id }
     );
   else
     await db.Query(
       `UPDATE categories
-       SET name = $2,
-           budget = $3
+       SET name = :name,
+           budget = :budget
            person = NULL
-       WHERE id = $1`,
-      id,
-      subject.name,
-      subject.budget
+       WHERE id = :id`,
+      { id, name: subject.name, subject: subject.budget }
     );
 
   return id;

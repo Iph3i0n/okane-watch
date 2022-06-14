@@ -1,13 +1,12 @@
 SELECT
-  c.name as key,
+  t.date as key,
   SUM(t.amount) as value
 FROM
-  categories c
-  INNER JOIN transactions t ON c.id = t.category
+  transactions t
 WHERE
   t.date >= :from_date
   AND t.date < :to_date
 GROUP BY
-  c.id
+  t.date
 ORDER BY
-  c.name
+  t.date ASC
