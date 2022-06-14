@@ -7,19 +7,7 @@ import {
   IsType,
 } from "@paulpopat/safe-type";
 import React from "react";
-import {
-  Cell,
-  Legend,
-  Pie,
-  PieChart,
-  LineChart,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Line,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import { Cell, Legend, Pie, PieChart, LineChart, Line } from "recharts";
 import Styled from "styled-components";
 
 const ChartDataTypes = {
@@ -43,15 +31,18 @@ const Colours = [
   "var(--rainbow-0)",
 ];
 
-const Size = [500, 400] as const;
+const Size = 400;
 
 const ChartTypes: {
-  [TKey in keyof TChartData]: React.FC<{ data: TChartDataTypes<TKey> }>;
+  [TKey in keyof TChartData]: React.FC<{
+    data: TChartDataTypes<TKey>;
+    width: number;
+  }>;
 } = {
-  pie: ({ data }) => {
+  pie: ({ data, width }) => {
     const [highlight, set_highlight] = React.useState("");
     return (
-      <PieChart width={Size[0]} height={Size[1]}>
+      <PieChart width={width} height={Size}>
         <Pie
           dataKey="value"
           isAnimationActive={true}
@@ -84,14 +75,16 @@ const ChartTypes: {
       </PieChart>
     );
   },
-  line: ({ data }) => {
+  line: ({ data, width }) => {
+    const d = data.map((d) => ({ name: d.key, value: d.value }));
     return (
-      <LineChart
-        width={Size[0]}
-        height={Size[1]}
-        data={data.map((d) => ({ name: d.key, value: d.value }))}
-      >
-        <Line type="monotone" strokeWidth="2" dataKey="value" stroke={Colours[0]} />
+      <LineChart width={width} height={Size} data={d}>
+        <Line
+          type="monotone"
+          strokeWidth="2"
+          dataKey="value"
+          stroke={Colours[0]}
+        />
       </LineChart>
     );
   },
@@ -109,11 +102,17 @@ export const Chart: React.FC<{ type: string; data: unknown }> = ({
 }) => {
   if (!ChartDataTypes[type]) throw new Error("Data type unknown");
   Assert(ChartDataTypes[type], data);
+  const container_ref = React.createRef<HTMLDivElement>();
+  const [width, set_width] = React.useState(Size);
+
+  React.useEffect(() => {
+    const current = container_ref.current;
+    if (!current) return;
+    set_width(current.clientWidth);
+  }, [container_ref.current]);
   return (
-    <ChartContainer>
-      <ResponsiveContainer width="100%" height="100%">
-        {React.createElement(ChartTypes[type], { data })}
-      </ResponsiveContainer>
+    <ChartContainer ref={container_ref}>
+      {React.createElement(ChartTypes[type], { data, width })}
     </ChartContainer>
   );
 };
