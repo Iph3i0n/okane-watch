@@ -1,11 +1,10 @@
 {
-  "default_query": "category-spend-pie",
-  "queries": [
-    {
-      "slug": "category-spend-pie",
-      "chart_type": "pie",
-      "parameters": ["to_date", "from_date"],
-      "name": "Category Spend"
-    }
-  ]
+  "category-spend-pie": {
+    "chart_type": "pie",
+    "parameters": ["to_date", "from_date"]
+  },
+  "spend-over-days": {
+    "chart_type": "line",
+    "parameters": ["to_date", "from_date"]
+  }
 }

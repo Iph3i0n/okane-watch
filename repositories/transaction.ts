@@ -51,27 +51,40 @@ export async function Add(
   const id = Guid();
   await db.Query(
     `INSERT INTO transactions(id, person, category, description, amount, date)
-     VALUES ($1, $2, $3, $4, $5, $6)`,
-    id,
-    user.id,
-    transaction.category,
-    transaction.description,
-    transaction.amount,
-    ToJsDate(transaction.when)
+     VALUES (:id, :person, :category, :description, :amount, :when)`,
+    {
+      id,
+      person: user.id,
+      category: transaction.category,
+      description: transaction.description,
+      amount: transaction.amount,
+      when: ToJsDate(transaction.when),
+    }
   );
 
   return id;
 }
 
-export async function GetTransactions(from: DateObject, to: DateObject) {
+export async function GetTransactions(
+  from: DateObject,
+  to: DateObject,
+  user_id: string | undefined,
+  category_id: string | undefined
+) {
   const db = DatabaseContext.Use();
   const rows = await db.Query(
     `SELECT id, person, category, description, amount, date
      FROM transactions
-     WHERE date >= $1 AND date < $2
+     WHERE date >= :from_date AND date < :to_date ${
+       user_id ? "AND person = :person" : ""
+     } ${category_id ? "AND category = :category" : ""}
      ORDER BY date DESC, person DESC, description DESC`,
-    ToJsDate(from),
-    ToJsDate(to)
+    {
+      from_date: ToJsDate(from),
+      to_date: ToJsDate(to),
+      person: user_id,
+      category: category_id,
+    }
   );
 
   Assert(IsArray(IsTransactionDto), rows);
@@ -83,8 +96,8 @@ export async function Get(id: string) {
   const rows = await db.Query(
     `SELECT id, person, category, description, amount, date
      FROM transactions
-     WHERE id = $1`,
-    id
+     WHERE id = :id`,
+    { id }
   );
 
   Assert(IsTuple(IsTransactionDto), rows);
@@ -100,10 +113,14 @@ export async function GetTotalForCategory(
   const rows = await db.Query(
     `SELECT SUM(amount) as total
      FROM transactions
-     WHERE date >= $1 AND date < $2 AND category = $3`,
-    ToJsDate(from),
-    ToJsDate(to),
-    category_id
+     WHERE date >= :from_date 
+      AND date < :to_date
+      AND category = :category_id`,
+    {
+      from_date: ToJsDate(from),
+      to_date: ToJsDate(to),
+      category_id,
+    }
   );
 
   Assert(
@@ -123,11 +140,16 @@ export async function GetTotalForCategoryWIthCurrentUser(
   const rows = await db.Query(
     `SELECT SUM(amount) as total
      FROM transactions
-     WHERE date >= $1 AND date < $2 AND category = $3 AND person = $4`,
-    ToJsDate(from),
-    ToJsDate(to),
-    category_id,
-    user.id
+     WHERE date >= :from_date
+      AND date < :to_date
+      AND category = :category_id
+      AND person = :user_id`,
+    {
+      from_date: ToJsDate(from),
+      to_date: ToJsDate(to),
+      category_id,
+      user_id: user.id,
+    }
   );
 
   Assert(
@@ -150,18 +172,20 @@ export async function Update(id: string, transaction: Omit<Transaction, "id">) {
   const db = DatabaseContext.Use();
   await db.Query(
     `UPDATE transactions
-     SET person = $2,
-         category = $3,
-         description = $4,
-         amount = $5,
-         date = $6
-     WHERE id = $1`,
-    id,
-    transaction.person,
-    transaction.category,
-    transaction.description,
-    transaction.amount,
-    ToJsDate(transaction.when)
+     SET person = :person,
+         category = :category,
+         description = :description,
+         amount = :amount,
+         date = :when
+     WHERE id = :id`,
+    {
+      id,
+      person: transaction.person,
+      category: transaction.category,
+      description: transaction.description,
+      amount: transaction.amount,
+      when: ToJsDate(transaction.when),
+    }
   );
 
   return id;
@@ -180,7 +204,7 @@ export async function Delete(id: string) {
   const db = DatabaseContext.Use();
   await db.Query(
     `DELETE FROM transactions
-     WHERE id = $1`,
-    id
+     WHERE id = :id`,
+    { id }
   );
 }

@@ -1,5 +1,4 @@
-import { Card } from "$components/card";
-import FormFor from "$components/form";
+import FormFor, { Dropdown } from "$components/form";
 import { Col, Row } from "$components/layout";
 import { UseCurrentUser } from "$contexts/react-user";
 import { UseUiText } from "$contexts/uitext";
@@ -15,12 +14,13 @@ import {
 import { IconDelete, IconEdit } from "../components/icons";
 import Modal from "../components/modal";
 import TableFor from "../components/table";
-import { H1 } from "../components/text";
+import { Badge, H1 } from "../components/text";
 import ApiClient from "../services/api";
 import CreatePage from "../utils/page";
 import { IsCompleteTransaction } from "../types/transaction";
 import { Year, Month, Day } from "../utils/constants";
 import { ToCurrencyString } from "../utils/number";
+import { UpdateQueryString } from "$utils/url";
 
 const Table = TableFor(IsCompleteTransaction);
 
@@ -41,9 +41,21 @@ const Form = FormFor(
 
 export default CreatePage(
   async (ctx) => {
+    const category = ctx.query.category?.toString();
+    const person =
+      ctx.query.person === "all"
+        ? undefined
+        : ctx.query.person?.toString() ?? ctx.user?.id;
     return {
-      transactions: await ApiClient.Transactions.GetMonth(GetDateRange(ctx)),
+      transactions: await ApiClient.Transactions.GetList({
+        ...GetDateRange(ctx),
+        category: category,
+        person: person,
+      }),
       categories: await ApiClient.Categories.GetOptions(),
+      people: await ApiClient.People.GetAll(),
+      person,
+      category,
     };
   },
   (props) => {
@@ -58,82 +70,113 @@ export default CreatePage(
     return (
       <>
         <Row>
-          <Col xs="12">
+          <Col xs="12" md="4">
             <H1>{uitext.transactions}</H1>
+          </Col>
+          <Col xs="12" md="4">
+            <Dropdown
+              value={props.person ?? "all"}
+              set_value={(v) => UpdateQueryString("person", v)}
+              label={uitext.person}
+            >
+              <option value="all">{uitext.all}</option>
+              {props.people.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </Dropdown>
+          </Col>
+          <Col xs="12" md="4">
+            <Dropdown
+              value={props.category ?? ""}
+              set_value={(v) => UpdateQueryString("category", v)}
+              label={uitext.category}
+            >
+              <option value="">{uitext.all}</option>
+              {props.categories.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.personal ? `(${uitext.personal})` : ""} {p.name}
+                </option>
+              ))}
+            </Dropdown>
           </Col>
         </Row>
         <Row>
           <Col xs="12">
-            <Card>
-              <Table rows={transactions}>
-                <thead>
-                  <tr>
-                    <th>{uitext.date}</th>
-                    <th>{uitext.person}</th>
-                    <th>{uitext.description}</th>
-                    <th>{uitext.category}</th>
-                    <th>{uitext.amount}</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <Table.Row>
-                    {(row) => (
-                      <>
-                        <td>{ToDateString(row.when)}</td>
-                        <td>{row.person.name}</td>
-                        <td>{row.description}</td>
-                        <td>{row.category.name}</td>
-                        <td>
-                          {ToCurrencyString(
-                            row.amount,
-                            uitext.locale,
-                            uitext.currency_label
-                          )}
-                        </td>
-                        <td>
-                          {user.id === row.person.id && (
-                            <>
-                              <InvisibleButton
-                                type="button"
-                                onClick={() => {
-                                  set_current(row.id);
-                                  set_form_value({
-                                    when: row.when,
-                                    description: row.description,
-                                    category: row.category.id,
-                                    amount: row.amount,
-                                  });
-                                  set_editing(true);
-                                }}
-                              >
-                                <IconEdit
-                                  colour="var(--body)"
-                                  width="24"
-                                  height="24"
-                                />
-                              </InvisibleButton>
-                              <InvisibleButton
-                                type="button"
-                                onClick={() => {
-                                  set_deleting(row.id);
-                                }}
-                              >
-                                <IconDelete
-                                  colour="var(--body)"
-                                  width="24"
-                                  height="24"
-                                />
-                              </InvisibleButton>
-                            </>
-                          )}
-                        </td>
-                      </>
-                    )}
-                  </Table.Row>
-                </tbody>
-              </Table>
-            </Card>
+            <Table rows={transactions}>
+              <thead>
+                <tr>
+                  <th>{uitext.date}</th>
+                  <th>{uitext.person}</th>
+                  <th>{uitext.description}</th>
+                  <th>{uitext.category}</th>
+                  <th>{uitext.amount}</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <Table.Row>
+                  {(row) => (
+                    <>
+                      <td>{ToDateString(row.when)}</td>
+                      <td>{row.person.name}</td>
+                      <td>{row.description}</td>
+                      <td>
+                        {row.category.personal && (
+                          <Badge>{uitext.personal_badge}</Badge>
+                        )}
+                        {row.category.name}
+                      </td>
+                      <td>
+                        {ToCurrencyString(
+                          row.amount,
+                          uitext.locale,
+                          uitext.currency_label
+                        )}
+                      </td>
+                      <td>
+                        {user.id === row.person.id && (
+                          <>
+                            <InvisibleButton
+                              type="button"
+                              onClick={() => {
+                                set_current(row.id);
+                                set_form_value({
+                                  when: row.when,
+                                  description: row.description,
+                                  category: row.category.id,
+                                  amount: row.amount,
+                                });
+                                set_editing(true);
+                              }}
+                            >
+                              <IconEdit
+                                colour="var(--body)"
+                                width="24"
+                                height="24"
+                              />
+                            </InvisibleButton>
+                            <InvisibleButton
+                              type="button"
+                              onClick={() => {
+                                set_deleting(row.id);
+                              }}
+                            >
+                              <IconDelete
+                                colour="var(--body)"
+                                width="24"
+                                height="24"
+                              />
+                            </InvisibleButton>
+                          </>
+                        )}
+                      </td>
+                    </>
+                  )}
+                </Table.Row>
+              </tbody>
+            </Table>
           </Col>
         </Row>
         <Row>
@@ -186,6 +229,9 @@ export default CreatePage(
             </Form.TextInput>
             <Form.DatePicker name="when">{uitext.when}</Form.DatePicker>
             <Form.Select name="category" label={uitext.category}>
+              <option disabled value="">
+                {uitext.pick_one}
+              </option>
               {props.categories.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}

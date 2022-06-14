@@ -145,6 +145,33 @@ export const SelectDate: React.C<{
   );
 };
 
+export const Checkbox: React.C<{
+  checked: boolean;
+  set_checked: (val: boolean) => void;
+}> = ({ checked, set_checked, children }) => (
+  <Label>
+    {children}
+    <Input
+      type="checkbox"
+      checked={checked}
+      onChange={(e) => set_checked(e.currentTarget.checked)}
+    />
+  </Label>
+);
+
+export const Dropdown: React.C<{
+  value: string;
+  set_value: (value: string) => void;
+  label: string;
+}> = ({ children, label, value, set_value }) => (
+  <Label>
+    {label}
+    <Select value={value} onChange={(e) => set_value(e.currentTarget.value)}>
+      {children}
+    </Select>
+  </Label>
+);
+
 export default function FormFor<T extends Record<string, any>>(
   schema: Checker<T>,
   default_value: T
@@ -238,21 +265,14 @@ export default function FormFor<T extends Record<string, any>>(
       }>,
       Select: (({ label, children, name }) => {
         const { get, set } = React.useContext(Context);
-        const uitext = UseUiText();
-
         return (
-          <Label>
-            {label}
-            <Select
-              value={get(name)}
-              onChange={(e) => set(name, e.currentTarget.value as any)}
-            >
-              <option disabled value="">
-                {uitext.pick_one}
-              </option>
-              {children}
-            </Select>
-          </Label>
+          <Dropdown
+            label={label}
+            value={get(name)}
+            set_value={(v) => set(name, v as any)}
+          >
+            {children}
+          </Dropdown>
         );
       }) as React.C<{ label: string; name: keyof T }>,
       DatePicker: (({ children, name }) => {
@@ -271,14 +291,12 @@ export default function FormFor<T extends Record<string, any>>(
         const { get, set } = React.useContext(Context);
 
         return (
-          <Label>
+          <Checkbox
+            checked={get(name)}
+            set_checked={(c) => set(name, c as any)}
+          >
             {children}
-            <Input
-              type="checkbox"
-              checked={get(name)}
-              onChange={(e) => set(name, e.currentTarget.checked as any)}
-            />
-          </Label>
+          </Checkbox>
         );
       }) as React.C<{ name: keyof T }>,
       default_value,

@@ -1,4 +1,3 @@
-import { Card } from "$components/card";
 import { Chart } from "$components/chart";
 import FormFor from "$components/form";
 import { Col, Row } from "$components/layout";
@@ -29,21 +28,34 @@ const Form = FormFor(
 export default CreatePage(
   async (ctx) => {
     const queries = await ApiClient.Query.GetAll();
-    const default_query = queries.queries.find(
-      (q) => q.slug === queries.default_query
-    );
-
+    const query_options = Object.keys(queries);
     const range = GetDateRange(ctx);
     return {
       categories: await ApiClient.Categories.GetOverview(range),
-      query_result: await ApiClient.Query.Run({
-        slug: default_query.slug,
-        from_date: range.from,
-        to_date: range.to,
-        person: undefined,
-        category: undefined,
-      }),
-      query: default_query,
+      queries: [
+        {
+          name: query_options[0],
+          metadata: queries[query_options[0]],
+          value: await ApiClient.Query.Run({
+            slug: query_options[0],
+            from_date: range.from,
+            to_date: range.to,
+            person: undefined,
+            category: undefined,
+          }),
+        },
+        {
+          name: query_options[1],
+          metadata: queries[query_options[1]],
+          value: await ApiClient.Query.Run({
+            slug: query_options[1],
+            from_date: range.from,
+            to_date: range.to,
+            person: undefined,
+            category: undefined,
+          }),
+        },
+      ] as const,
     };
   },
   (props) => {
@@ -61,136 +73,127 @@ export default CreatePage(
           </Col>
         </Row>
         <Row>
-          <Col xs="12">
-            <H2>{uitext.totals}</H2>
-          </Col>
+          {props.queries.map((q) => (
+            <Col xs="12" md="6" key={q.name}>
+              <H2>{uitext.query_names[q.name]}</H2>
+              <Chart type={q.metadata.chart_type} data={q.value} />
+            </Col>
+          ))}
         </Row>
         <Row>
           <Col xs="12">
-            <Card>
-              <H2>{props.query.name}</H2>
-              <Chart type={props.query.chart_type} data={props.query_result} />
-            </Card>
-          </Col>
-        </Row>
-        <Row>
-          <Col xs="12">
-            <Card>
-              <Table rows={categories}>
-                <thead>
-                  <tr>
-                    <th>{uitext.category}</th>
-                    <th>{uitext.budget}</th>
-                    <th>{uitext.spend}</th>
-                    <th>{uitext.diff}</th>
-                    <th>{uitext.personal}</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <Table.Row>
-                    {(row) => (
-                      <>
-                        <td>
-                          {row.personal && (
-                            <Badge>{uitext.personal_badge}</Badge>
-                          )}
-                          {row.name}
-                        </td>
-                        <td>
-                          {ToCurrencyString(
-                            row.budget,
-                            uitext.locale,
-                            uitext.currency_label
-                          )}
-                        </td>
-                        <td>
-                          {ToCurrencyString(
-                            row.total.spend,
-                            uitext.locale,
-                            uitext.currency_label
-                          )}
-                        </td>
-                        <GoodBadCurrencyCell number={row.total.diff} />
-                        <td>
-                          {ToCurrencyString(
-                            row.your.spend,
-                            uitext.locale,
-                            uitext.currency_label
-                          )}
-                        </td>
-                        <td>
-                          <InvisibleButton
-                            type="button"
-                            onClick={() => {
-                              set_current(row.id);
-                              set_form_value({
-                                name: row.name,
-                                budget: row.budget,
-                                personal: row.personal,
-                              });
-                              set_editing(true);
-                            }}
-                          >
-                            <IconEdit
-                              colour="var(--body)"
-                              width="24"
-                              height="24"
-                            />
-                          </InvisibleButton>
-                        </td>
-                      </>
+            <Table rows={categories}>
+              <thead>
+                <tr>
+                  <th>{uitext.category}</th>
+                  <th>{uitext.budget}</th>
+                  <th>{uitext.spend}</th>
+                  <th>{uitext.diff}</th>
+                  <th>{uitext.personal}</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <Table.Row>
+                  {(row) => (
+                    <>
+                      <td>
+                        {row.personal && <Badge>{uitext.personal_badge}</Badge>}
+                        {row.name}
+                      </td>
+                      <td>
+                        {ToCurrencyString(
+                          row.budget,
+                          uitext.locale,
+                          uitext.currency_label
+                        )}
+                      </td>
+                      <td>
+                        {ToCurrencyString(
+                          row.total.spend,
+                          uitext.locale,
+                          uitext.currency_label
+                        )}
+                      </td>
+                      <GoodBadCurrencyCell number={row.total.diff} />
+                      <td>
+                        {ToCurrencyString(
+                          row.your.spend,
+                          uitext.locale,
+                          uitext.currency_label
+                        )}
+                      </td>
+                      <td>
+                        <InvisibleButton
+                          type="button"
+                          onClick={() => {
+                            set_current(row.id);
+                            set_form_value({
+                              name: row.name,
+                              budget: row.budget,
+                              personal: row.personal,
+                            });
+                            set_editing(true);
+                          }}
+                        >
+                          <IconEdit
+                            colour="var(--body)"
+                            width="24"
+                            height="24"
+                          />
+                        </InvisibleButton>
+                      </td>
+                    </>
+                  )}
+                </Table.Row>
+                <HighlightRow>
+                  <td>{uitext.total}</td>
+                  <td>
+                    {ToCurrencyString(
+                      categories
+                        .map((c) => c.budget)
+                        .reduce((c, n) => c + n, 0),
+                      uitext.locale,
+                      uitext.currency_label
                     )}
-                  </Table.Row>
-                  <HighlightRow>
-                    <td>{uitext.total}</td>
-                    <td>
-                      {ToCurrencyString(
-                        categories
-                          .map((c) => c.budget)
-                          .reduce((c, n) => c + n, 0),
-                        uitext.locale,
-                        uitext.currency_label
-                      )}
-                    </td>
-                    <td>
-                      {ToCurrencyString(
-                        categories
-                          .map((c) => c.total.spend)
-                          .reduce((c, n) => c + n, 0),
-                        uitext.locale,
-                        uitext.currency_label
-                      )}
-                    </td>
-                    <GoodBadCurrencyCell
-                      number={categories
-                        .map((c) => c.total.diff)
-                        .reduce((c, n) => c + n, 0)}
-                    />
-                    <td>
-                      {ToCurrencyString(
-                        categories
-                          .map((c) => c.your.spend)
-                          .reduce((c, n) => c + n, 0),
-                        uitext.locale,
-                        uitext.currency_label
-                      )}
-                    </td>
-                    <td />
-                  </HighlightRow>
-                </tbody>
-              </Table>
-              <ThemeButton
-                type="button"
-                onClick={() => {
-                  set_editing(true);
-                  set_current("");
-                  set_form_value(Form.default_value);
-                }}
-              >
-                {uitext.add}
-              </ThemeButton>
-            </Card>
+                  </td>
+                  <td>
+                    {ToCurrencyString(
+                      categories
+                        .map((c) => c.total.spend)
+                        .reduce((c, n) => c + n, 0),
+                      uitext.locale,
+                      uitext.currency_label
+                    )}
+                  </td>
+                  <GoodBadCurrencyCell
+                    number={categories
+                      .map((c) => c.total.diff)
+                      .reduce((c, n) => c + n, 0)}
+                  />
+                  <td>
+                    {ToCurrencyString(
+                      categories
+                        .map((c) => c.your.spend)
+                        .reduce((c, n) => c + n, 0),
+                      uitext.locale,
+                      uitext.currency_label
+                    )}
+                  </td>
+                  <td />
+                </HighlightRow>
+              </tbody>
+            </Table>
+            <ThemeButton
+              type="button"
+              onClick={() => {
+                set_editing(true);
+                set_current("");
+                set_form_value(Form.default_value);
+              }}
+            >
+              {uitext.add}
+            </ThemeButton>
           </Col>
         </Row>
         <Modal

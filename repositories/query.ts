@@ -1,8 +1,10 @@
 import Config from "$queries/config.json";
-import { pg } from "yesql";
 import Fs from "fs-extra";
 import Path from "path";
 import { DatabaseContext } from "$contexts/database";
+import object from "$utils/object";
+import { IsDate } from "@paulpopat/safe-type";
+import { FromJsDate, ToDateString } from "$types/utility";
 
 type PossibleParameters = {
   from_date?: string;
@@ -15,8 +17,11 @@ export function GetAll() {
   return Config;
 }
 
-export async function Execute(slug: string, parameters: PossibleParameters) {
-  const metadata = Config.queries.find((q) => q.slug === slug);
+export async function Execute(
+  slug: keyof typeof Config,
+  parameters: PossibleParameters
+) {
+  const metadata = Config[slug];
 
   for (const key of metadata.parameters) {
     if (!parameters[key]) throw new Error("Missing parameter data");
@@ -28,7 +33,12 @@ export async function Execute(slug: string, parameters: PossibleParameters) {
     "utf-8"
   );
 
-  const final_query = pg(query)(parameters);
-  const response = await db.Query(final_query.text, ...final_query.values);
-  return response;
+  const response = await db.Query(query, parameters);
+  return response.map((r) =>
+    typeof r === "object"
+      ? object.MapKeys(r, (k, v) =>
+          IsDate(v) ? ToDateString(FromJsDate(v)) : (v as any)
+        )
+      : r
+  );
 }

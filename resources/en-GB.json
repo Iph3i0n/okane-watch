@@ -32,5 +32,10 @@
   "personal": "Personal",
   "logout": "Logout",
   "totals": "Totals",
-  "personal_badge": "P"
+  "personal_badge": "personal",
+  "all": "All",
+  "query_names": {
+    "category-spend-pie": "Category Spend",
+    "spend-over-days": "Spend Over Days"
+  }
 }

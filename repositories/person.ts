@@ -29,8 +29,8 @@ export async function Get(id: string) {
   const db = DatabaseContext.Use();
   const rows = await db.Query(
     `SELECT id, name FROM people
-     WHERE id = $1`,
-    id
+     WHERE id = :id`,
+    { id }
   );
 
   Assert(IsTuple(IsPerson), rows);
@@ -41,8 +41,8 @@ export async function GetByName(name: string) {
   const db = DatabaseContext.Use();
   const rows = await db.Query(
     `SELECT id, name FROM people
-     WHERE name = $1`,
-    name
+     WHERE name = :name`,
+    { name }
   );
 
   Assert(IsTuple(IsPerson), rows);
@@ -53,10 +53,8 @@ export async function Add(name: string, password: string) {
   const db = DatabaseContext.Use();
   const id = Guid();
   await db.Query(
-    `INSERT INTO people(id, name, password) VALUES ($1, $2, $3)`,
-    id,
-    name,
-    await Encrypt(password)
+    `INSERT INTO people(id, name, password) VALUES (:id, :name, :password)`,
+    { id, name, password: await Encrypt(password) }
   );
 
   return id;
@@ -66,19 +64,17 @@ export async function Update(id: string, name: string, password: string) {
   const db = DatabaseContext.Use();
   await db.Query(
     `UPDATE people
-     SET name = $2
-     WHERE id = $1`,
-    id,
-    name
+     SET name = :name
+     WHERE id = :id`,
+    { id, name }
   );
 
   if (password)
     await db.Query(
       `UPDATE people
-       SET password = $2
-       WHERE id = $1`,
-      id,
-      await Encrypt(password)
+       SET password = :password
+       WHERE id = :id`,
+      { id, password: await Encrypt(password) }
     );
 
   return id;
@@ -88,8 +84,8 @@ export async function IsCorrectPassword(name: string, password: string) {
   const db = DatabaseContext.Use();
   const rows = await db.Query(
     `SELECT password FROM people
-     WHERE name = $1`,
-    name
+     WHERE name = :name`,
+    { name }
   );
 
   Assert(IsTuple(IsObject({ password: IsString })), rows);

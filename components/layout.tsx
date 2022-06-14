@@ -41,6 +41,24 @@ export const Row = Styled.section`
   margin-bottom: var(--block-padding);
 `;
 
+const Card = Styled.div`
+  opacity: 1;
+  background: var(--bg-surface);
+  border-radius: var(--border-radius);
+  padding: var(--block-padding);
+
+  animation: card-fade-in 500ms;
+
+  .loading & {
+    opacity: 0;
+    animation: card-fade-out 500ms;
+  }
+
+  input, select {
+    background: var(--bg-white);
+  }
+`;
+
 export const ColBase = Styled.div`
   position: relative;
 
@@ -72,7 +90,7 @@ export const Col: React.C<ColProps> = (props) => {
           .map((k) => `${k}-${props[k]}`)
       )}
     >
-      {props.children}
+      <Card>{props.children}</Card>
     </ColBase>
   );
 };
