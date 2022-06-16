@@ -43,3 +43,7 @@ export const IconNext = BuildSvg(() => (
 export const IconLast = BuildSvg(() => (
   <path d="M16 12.667L5.777 19.482A.5.5 0 0 1 5 19.066V4.934a.5.5 0 0 1 .777-.416L16 11.333V5a1 1 0 0 1 2 0v14a1 1 0 0 1-2 0v-6.333zm-9-4.93v8.526L13.394 12 7 7.737z" />
 ));
+
+export const IconBurger = BuildSvg(() => (
+  <path d="M3 4h18v2H3V4zm0 7h18v2H3v-2zm0 7h18v2H3v-2z" />
+));

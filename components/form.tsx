@@ -1,10 +1,16 @@
 import { Assert, Checker } from "@paulpopat/safe-type";
 import React from "react";
 import Styled from "styled-components";
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { DateObject, FromJsDate, IsDateObject, ToJsDate } from "$types/utility";
-import { UseUiText } from "$contexts/uitext";
+import {
+  DateObject,
+  FromDateString,
+  IsDateObject,
+  ToDateString,
+  ToJsDate,
+} from "$types/utility";
+import { BreakPoints, Col, Row } from "./layout";
+import { v4 as Guid } from "uuid";
 
 const Form = Styled.form`
   display: grid;
@@ -12,116 +18,32 @@ const Form = Styled.form`
   gap: var(--block-padding);
 `;
 
-const Label = Styled.label`
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-`;
-
-const DatePickerLabel = Styled.label`
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-
-  input {
-    flex: 1;
+const InputContainer = Styled.div`
+  input, select {
+    width: 100%;
     color: var(--body);
     font-family: var(--font-family);
     font-size: var(--font-size-text);
     font-weight: var(--font-weight-standard);
-    background: var(--bg-surface);
-    border: none;
-    border-radius: var(--border-radius);
-    margin-left: var(--block-padding);
-    padding: var(--text-padding-y) var(--text-padding-x);
-  }
-
-  .react-datepicker__triangle {
-    display: none;
-  }
-
-  .react-datepicker__header {
-    background: var(--bg-surface);
-    border: none;
-  }
-
-  .react-datepicker {
     background: var(--bg-white);
     border: none;
-    box-shadow: var(--box-shadow);
     border-radius: var(--border-radius);
-  }
-
-  .react-datepicker__day-name,
-  .react-datepicker__day,
-  .react-datepicker__time-name,
-  .react-datepicker__current-month {
-    color: var(--body);
-  }
-
-  .react-datepicker__navigation:hover *::before {
-    border-color: var(--body);
-  }
-
-  .react-datepicker__day--selected,
-  .react-datepicker__day--in-selecting-range,
-  .react-datepicker__day--in-range,
-  .react-datepicker__month-text--selected,
-  .react-datepicker__month-text--in-selecting-range,
-  .react-datepicker__month-text--in-range,
-  .react-datepicker__quarter-text--selected,
-  .react-datepicker__quarter-text--in-selecting-range,
-  .react-datepicker__quarter-text--in-range,
-  .react-datepicker__year-text--selected,
-  .react-datepicker__year-text--in-selecting-range,
-  .react-datepicker__year-text--in-range {
-    background-color: var(--theme-dark);
-    color: var(--white);
-    border-radius: var(--border-radius);
-  }
-
-  .react-datepicker__day:hover,
-  .react-datepicker__month-text:hover,
-  .react-datepicker__quarter-text:hover,
-  .react-datepicker__year-text:hover {
-    background-color: var(--bg-surface);
-    border-radius: var(--border-radius);
-  }
-
-  .react-datepicker__input-container {
-    display: flex;
-  }
-
-  .react-datepicker__day--outside-month {
-    opacity: 0.7;
+    box-sizing: border-box;
+    padding: var(--text-padding-y) var(--text-padding-x);
+    margin: 0;
+    -webkit-appearance: none;
   }
 `;
 
-const Input = Styled.input`
-  flex: 1;
-  font-family: var(--font-family);
-  font-size: var(--font-size-text);
-  font-weight: var(--font-weight-standard);
-  background: var(--bg-surface);
-  border: none;
-  border-radius: var(--border-radius);
-  margin-left: var(--block-padding);
-  padding: var(--text-padding-y) var(--text-padding-x);
-  color: var(--body);
-`;
+const LabelText = Styled.label`
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100%;
 
-const Select = Styled.select`
-  flex: 1;
-  font-family: var(--font-family);
-  font-size: var(--font-size-text);
-  font-weight: var(--font-weight-standard);
-  background: var(--bg-surface);
-  border: none;
-  border-radius: var(--border-radius);
-  margin-left: var(--block-padding);
-  padding: var(--text-padding-y) var(--text-padding-x);
-  -webkit-appearance: none;
-  color: var(--body);
+  @media screen and (min-width: ${BreakPoints.md}) {
+    justify-content: flex-end;
+  }
 `;
 
 type ContextObject<T extends Record<string, any>> = {
@@ -129,48 +51,75 @@ type ContextObject<T extends Record<string, any>> = {
   set: <TKey extends keyof T>(key: TKey, value: T[TKey]) => void;
 };
 
-export const SelectDate: React.C<{
+const Label: React.C<{ id: string; label: string }> = ({
+  label,
+  id,
+  children,
+}) => (
+  <Row>
+    <Col xs="12" md="3">
+      <LabelText htmlFor={id}>{label}</LabelText>
+    </Col>
+    <Col xs="12" md="9">
+      <InputContainer>{children}</InputContainer>
+    </Col>
+  </Row>
+);
+
+export const SelectDate: React.FC<{
   date: DateObject;
+  children: string;
   set_date: (value: DateObject) => void;
 }> = ({ date, set_date, children }) => {
+  const [id] = React.useState(() => Guid());
   return (
-    <DatePickerLabel>
-      {children}
-      <DatePicker
-        selected={ToJsDate(date)}
-        onChange={(date) => set_date(FromJsDate(date))}
-        dateFormat="yyyy-MM-dd"
+    <Label label={children} id={id}>
+      <input
+        id={id}
+        type="date"
+        value={ToDateString(date)}
+        onChange={(e) => set_date(FromDateString(e.currentTarget.value))}
       />
-    </DatePickerLabel>
+    </Label>
   );
 };
 
-export const Checkbox: React.C<{
+export const Checkbox: React.FC<{
   checked: boolean;
   set_checked: (val: boolean) => void;
-}> = ({ checked, set_checked, children }) => (
-  <Label>
-    {children}
-    <Input
-      type="checkbox"
-      checked={checked}
-      onChange={(e) => set_checked(e.currentTarget.checked)}
-    />
-  </Label>
-);
+  children: string;
+}> = ({ checked, set_checked, children }) => {
+  const [id] = React.useState(() => Guid());
+  return (
+    <Label label={children} id={id}>
+      <input
+        id={id}
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => set_checked(e.currentTarget.checked)}
+      />
+    </Label>
+  );
+};
 
 export const Dropdown: React.C<{
   value: string;
   set_value: (value: string) => void;
   label: string;
-}> = ({ children, label, value, set_value }) => (
-  <Label>
-    {label}
-    <Select value={value} onChange={(e) => set_value(e.currentTarget.value)}>
-      {children}
-    </Select>
-  </Label>
-);
+}> = ({ children, label, value, set_value }) => {
+  const [id] = React.useState(() => Guid());
+  return (
+    <Label label={label} id={id}>
+      <select
+        id={id}
+        value={value}
+        onChange={(e) => set_value(e.currentTarget.value)}
+      >
+        {children}
+      </select>
+    </Label>
+  );
+};
 
 export default function FormFor<T extends Record<string, any>>(
   schema: Checker<T>,
@@ -207,40 +156,41 @@ export default function FormFor<T extends Record<string, any>>(
     {
       TextInput: (({ children, name }) => {
         const { get, set } = React.useContext(Context);
-
+        const [id] = React.useState(() => Guid());
         return (
-          <Label>
-            {children}
-            <Input
+          <Label label={children} id={id}>
+            <input
+              id={id}
               type="text"
               value={get(name)}
               onChange={(e) => set(name, e.currentTarget.value as any)}
             />
           </Label>
         );
-      }) as React.C<{ name: keyof T }>,
+      }) as React.FC<{ children: string; name: keyof T }>,
       PasswordInput: (({ children, name }) => {
         const { get, set } = React.useContext(Context);
-
+        const [id] = React.useState(() => Guid());
         return (
-          <Label>
-            {children}
-            <Input
+          <Label label={children} id={id}>
+            <input
+              id={id}
               type="password"
               value={get(name)}
               onChange={(e) => set(name, e.currentTarget.value as any)}
             />
           </Label>
         );
-      }) as React.C<{ name: keyof T }>,
+      }) as React.FC<{ children: string; name: keyof T }>,
       NumberInput: (({ children, name, max, min, decimal_places }) => {
         const { get, set } = React.useContext(Context);
         const places = decimal_places ?? 1000;
+        const [id] = React.useState(() => Guid());
 
         return (
-          <Label>
-            {children}
-            <Input
+          <Label label={children} id={id}>
+            <input
+              id={id}
               type="number"
               value={get(name)}
               onChange={(e) =>
@@ -257,7 +207,8 @@ export default function FormFor<T extends Record<string, any>>(
             />
           </Label>
         );
-      }) as React.C<{
+      }) as React.FC<{
+        children: string;
         name: keyof T;
         max?: number;
         min?: number;
@@ -286,7 +237,7 @@ export default function FormFor<T extends Record<string, any>>(
             {children}
           </SelectDate>
         );
-      }) as React.C<{ name: keyof T }>,
+      }) as React.FC<{ children: string; name: keyof T }>,
       Checkbox: (({ children, name }) => {
         const { get, set } = React.useContext(Context);
 
@@ -298,7 +249,7 @@ export default function FormFor<T extends Record<string, any>>(
             {children}
           </Checkbox>
         );
-      }) as React.C<{ name: keyof T }>,
+      }) as React.FC<{ children: string; name: keyof T }>,
       default_value,
     }
   );

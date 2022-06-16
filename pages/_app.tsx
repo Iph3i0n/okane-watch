@@ -1,7 +1,8 @@
-import { ThemeButton } from "$components/button";
+import React from "react";
+import { InvisibleButton, ThemeButton } from "$components/button";
 import { SelectDate } from "$components/form";
-import { UserProvider } from "$contexts/react-user";
-import { UiTextProvider } from "$contexts/uitext";
+import { UseCurrentUser, UserProvider } from "$contexts/react-user";
+import { UiTextProvider, UseUiText } from "$contexts/uitext";
 import ApiClient from "$services/api";
 import { User } from "$types/person";
 import { DateObject, ToDateString } from "$types/utility";
@@ -13,45 +14,30 @@ import App, { AppContext, AppInitialProps } from "next/app";
 import Head from "next/head";
 import Link from "next/link";
 import Styled from "styled-components";
-import { Container } from "../components/layout";
+import { BreakPoints, Col, Container, Row } from "../components/layout";
 
 import "../styles/app.css";
+import { useRouter } from "next/router";
+import { IconBurger } from "$components/icons";
+import { LinkButton } from "$components/text";
 
 const Header = Styled.header`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  padding: 1rem;
   background: var(--bg-surface);
-  margin-bottom: 2rem;
-  z-index: 1;
+  margin: 0 0 var(--block-padding);
+  padding: var(--block-padding);
 
-  main {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
+  .right-panel {
+    margin-left: auto;
   }
 
   nav {
-    flex: 1;
-    margin-left: 3rem;
-  }
-
-  .right-panel {
-    display: grid;
-    grid-template-columns: auto auto auto;
-    gap: var(--block-padding);
-
-    input {
-      flex: 0;
-      background: var(--bg-white);
-      max-width: 100px;
-    }
+    overflow: hidden;
+    transition: height var(--animation-duration);
   }
 
   a {
-    padding: var(--text-padding-y) var(--text-padding-x);
+    display: block;
+    padding: var(--text-padding-y) 0;
     color: var(--body);
 
     &:hover {
@@ -62,6 +48,46 @@ const Header = Styled.header`
   b {
     color: var(--body);
     font-weight: var(--font-weight-large);
+  }
+
+  section {
+    margin-bottom: 0;
+  }
+
+  @media screen and (min-width: ${BreakPoints.md}) {
+    a {
+      display: inline-block;
+      padding: var(--text-padding-y) var(--text-padding-x);
+    }
+
+    nav {
+      height: 100% !important;
+      display: flex;
+      align-items: center;
+
+      section {
+        width: 100%;
+
+        a:first-child {
+          padding-left: 0;
+        }
+      }
+    }
+
+    button {
+      display: none;
+    }
+  }
+`;
+
+const AppTitleContainer = Styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  
+
+  @media screen and (min-width: ${BreakPoints.md}) {
+    height: 100%;
   }
 `;
 
@@ -78,6 +104,82 @@ async function GetUser() {
     return undefined;
   }
 }
+
+const AppHeader: React.FC<{
+  range: { from: DateObject; to: DateObject };
+}> = ({ range }) => {
+  const [open, set_open] = React.useState(false);
+  const uitext = UseUiText();
+  const router = useRouter();
+  const user = UseCurrentUser();
+
+  return (
+    <Header>
+      <Container>
+        <Row>
+          <Col xs="12" md="6" no_card>
+            <nav style={{ height: open ? 170 : 30 }}>
+              <Row>
+                <Col xs="12" lg="3" no_card>
+                  <AppTitleContainer>
+                    <b>{uitext.app_title}</b>
+                    <InvisibleButton
+                      type="button"
+                      onClick={() => set_open(!open)}
+                    >
+                      <IconBurger colour="var(--body)" width="24" height="24" />
+                    </InvisibleButton>
+                  </AppTitleContainer>
+                </Col>
+                <Col xs="12" lg="9" no_card>
+                  <Link href="/">{uitext.overview}</Link>
+                  <Link href="/transactions">{uitext.transactions}</Link>
+                  <Link href="/people">{uitext.people}</Link>
+                  {user && (
+                    <LinkButton action={ClearAuth}>{uitext.logout}</LinkButton>
+                  )}
+                </Col>
+              </Row>
+            </nav>
+          </Col>
+          <Col xs="12" md="6" display={open} no_card>
+            <div className="right-panel">
+              <Row>
+                <Col xs="12" md="6" no_card>
+                  <SelectDate
+                    date={range.from}
+                    set_date={(d) =>
+                      UpdateQueryString(router, ["from", ToDateString(d)])
+                    }
+                  >
+                    {uitext.from}
+                  </SelectDate>
+                </Col>
+                <Col xs="12" md="6" no_card>
+                  <SelectDate
+                    date={range.to}
+                    set_date={(d) =>
+                      UpdateQueryString(router, ["to", ToDateString(d)])
+                    }
+                  >
+                    {uitext.to}
+                  </SelectDate>
+                </Col>
+                {/* {user && (
+                  <Col xs="12" no_card>
+                    <ThemeButton type="button" onClick={ClearAuth}>
+                      {uitext.logout}
+                    </ThemeButton>
+                  </Col>
+                )} */}
+              </Row>
+            </div>
+          </Col>
+        </Row>
+      </Container>
+    </Header>
+  );
+};
 
 export default class MyApp extends App<MyAppProps, {}, { loading: boolean }> {
   constructor(props: MyAppProps) {
@@ -122,47 +224,7 @@ export default class MyApp extends App<MyAppProps, {}, { loading: boolean }> {
           <Head>
             <title>{this.props.uitext.app_title}</title>
           </Head>
-          <Header>
-            <Container>
-              <b>{this.props.uitext.app_title}</b>
-              <nav>
-                <Link href="/">{this.props.uitext.overview}</Link>
-                <Link href="/transactions">
-                  {this.props.uitext.transactions}
-                </Link>
-                <Link href="/people">{this.props.uitext.people}</Link>
-              </nav>
-              <div className="right-panel">
-                <SelectDate
-                  date={this.props.range.from}
-                  set_date={(d) =>
-                    UpdateQueryString(this.props.router, [
-                      "from",
-                      ToDateString(d),
-                    ])
-                  }
-                >
-                  {this.props.uitext.from}
-                </SelectDate>
-                <SelectDate
-                  date={this.props.range.to}
-                  set_date={(d) =>
-                    UpdateQueryString(this.props.router, [
-                      "to",
-                      ToDateString(d),
-                    ])
-                  }
-                >
-                  {this.props.uitext.to}
-                </SelectDate>
-                {this.props.user && (
-                  <ThemeButton type="button" onClick={ClearAuth}>
-                    {this.props.uitext.logout}
-                  </ThemeButton>
-                )}
-              </div>
-            </Container>
-          </Header>
+          <AppHeader range={this.props.range} />
           <Container className={C(["loading", this.state.loading])}>
             <this.props.Component {...this.props.pageProps} />
           </Container>
