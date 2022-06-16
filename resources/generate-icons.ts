@@ -44,6 +44,7 @@ Favicons(
       await WriteIcon(name, contents);
     }
 
+    await Fs.copyFile(logo_location, Path.join(icon_file_path, "icon.svg"));
     for (const { name, contents } of response.files) {
       await WriteFile(name, contents);
     }
