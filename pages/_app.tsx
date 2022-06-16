@@ -109,18 +109,23 @@ async function GetUser() {
 
 const AppHeader: React.FC<{
   range: { from: DateObject; to: DateObject };
-}> = ({ range }) => {
+  loading: boolean;
+}> = ({ range, loading }) => {
   const [open, set_open] = React.useState(false);
   const uitext = UseUiText();
   const router = useRouter();
   const user = UseCurrentUser();
 
+  React.useEffect(() => {
+    if (loading) set_open(false);
+  }, [loading]);
+
   return (
     <Header>
       <Container>
         <Row>
-          <Col xs="12" md="6" no_card>
-            <nav style={{ height: open ? 170 : 30 }}>
+          <Col xs="12" md="7" no_card>
+            <nav style={{ height: open ? 170 : 26 }}>
               <Row>
                 <Col xs="12" lg="3" no_card>
                   <AppTitleContainer>
@@ -144,7 +149,7 @@ const AppHeader: React.FC<{
               </Row>
             </nav>
           </Col>
-          <Col xs="12" md="6" display={open} no_card>
+          <Col xs="12" md="5" display={open} no_card>
             <div className="right-panel">
               <Row>
                 <Col xs="12" md="6" no_card>
@@ -167,13 +172,6 @@ const AppHeader: React.FC<{
                     {uitext.to}
                   </SelectDate>
                 </Col>
-                {/* {user && (
-                  <Col xs="12" no_card>
-                    <ThemeButton type="button" onClick={ClearAuth}>
-                      {uitext.logout}
-                    </ThemeButton>
-                  </Col>
-                )} */}
               </Row>
             </div>
           </Col>
@@ -229,7 +227,7 @@ export default class MyApp extends App<MyAppProps, {}, { loading: boolean }> {
             <title>{this.props.uitext.app_title}</title>
             <HeaderImageIncludes />
           </Head>
-          <AppHeader range={this.props.range} />
+          <AppHeader range={this.props.range} loading={this.state.loading} />
           <Container className={C(["loading", this.state.loading])}>
             <this.props.Component {...this.props.pageProps} />
           </Container>
