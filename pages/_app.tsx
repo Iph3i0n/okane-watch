@@ -15,6 +15,7 @@ import Head from "next/head";
 import Link from "next/link";
 import Styled from "styled-components";
 import { BreakPoints, Col, Container, Row } from "../components/layout";
+import { HeaderImageIncludes } from "$resources/header-images";
 
 import "../styles/app.css";
 import { useRouter } from "next/router";
@@ -95,6 +96,7 @@ type MyAppProps = AppInitialProps & {
   range: { from: DateObject; to: DateObject };
   uitext: any;
   user: User;
+  locale: string;
 };
 
 async function GetUser() {
@@ -194,12 +196,14 @@ export default class MyApp extends App<MyAppProps, {}, { loading: boolean }> {
       ...app,
       ctx: { ...app.ctx, user },
     } as any);
+    const uitext = await ApiClient.UiText({
+      locale: app.ctx.locale || app.ctx.defaultLocale || "en-GB",
+    });
     return {
       ...original,
       range: GetDateRangeObjects(app.ctx),
-      uitext: await ApiClient.UiText({
-        locale: app.ctx.locale || app.ctx.defaultLocale || "en-GB",
-      }),
+      uitext: uitext.data,
+      locale: uitext.actual,
       user,
     };
   }
@@ -223,6 +227,7 @@ export default class MyApp extends App<MyAppProps, {}, { loading: boolean }> {
         <UserProvider user={this.props.user}>
           <Head>
             <title>{this.props.uitext.app_title}</title>
+            <HeaderImageIncludes />
           </Head>
           <AppHeader range={this.props.range} />
           <Container className={C(["loading", this.state.loading])}>

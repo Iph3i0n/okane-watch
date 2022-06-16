@@ -17,6 +17,8 @@
     "dist": true,
     ".env": true,
     ".babelrc": true,
-    ".dockerignore": true
+    ".dockerignore": true,
+    "public/icons": true,
+    "resources/header-images.tsx": true
   }
 }

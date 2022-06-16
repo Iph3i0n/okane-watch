@@ -12,7 +12,7 @@ import {
 } from "@paulpopat/safe-type";
 import { IsCategory, IsSummaryCategory } from "../types/category";
 import { IsPerson, IsUser } from "../types/person";
-import { IsCompleteTransaction, IsTransaction } from "../types/transaction";
+import { IsCompleteTransaction } from "../types/transaction";
 import { GetAuth } from "$utils/cookies";
 
 const ApiClient = Api(
@@ -176,7 +176,10 @@ const ApiClient = Api(
       method: "GET",
       url: "/api/uitext/:locale",
       parameters: { locale: IsString },
-      returns: DoNotCare,
+      returns: IsObject({
+        actual: IsString,
+        data: DoNotCare,
+      }),
     },
   },
   {
