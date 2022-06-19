@@ -239,7 +239,7 @@ export default CreatePage(
           >
             <Form.TextInput name="name">{uitext.name}</Form.TextInput>
             <Form.NumberInput name="budget" min={0} decimal_places={2}>
-              {uitext.budget} ({uitext.currency})
+              {`${uitext.budget} (${uitext.currency})`}
             </Form.NumberInput>
             <Form.Checkbox name="personal">{uitext.personal}</Form.Checkbox>
             <ThemeButton type="submit">{uitext.submit}</ThemeButton>

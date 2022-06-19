@@ -19,7 +19,7 @@ type Cols =
   | "11"
   | "12";
 
-const BreakPoints = {
+export const BreakPoints = {
   xs: "0",
   sm: "450px",
   md: "700px",
@@ -28,12 +28,15 @@ const BreakPoints = {
 };
 
 type BreakPointLabels = keyof typeof BreakPoints;
-type ColProps = Partial<Record<BreakPointLabels, Cols>>;
+type ColProps = Partial<Record<BreakPointLabels, Cols>> & {
+  display?: boolean;
+  no_card?: boolean;
+};
 
 export const Container = Styled.main`
   max-width: var(--screen-max-width);
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 var(--block-padding);
 `;
 
 export const Row = Styled.section`
@@ -41,6 +44,10 @@ export const Row = Styled.section`
   grid-template-columns: repeat(${ColumnCount}, minmax(0, 1fr));
   gap: var(--block-padding);
   margin-bottom: var(--block-padding);
+
+  & & {
+    margin-bottom: 0;
+  }
 `;
 
 const Card = Styled.div`
@@ -66,6 +73,10 @@ const Card = Styled.div`
 export const ColBase = Styled.div`
   position: relative;
   height: 100%;
+
+  @media screen and (min-width: ${BreakPoints.md}) {
+    display: block !important;
+  }
 
   ${Object.keys(BreakPoints)
     .map(
@@ -96,9 +107,14 @@ export const Col: React.C<ColProps> = (props) => {
           .filter((p) => p !== "children")
           .map((k) => `${k}-${props[k]}`)
       )}
+      style={{ display: props.display ?? true ? undefined : "none" }}
     >
       <ColContext.Provider value={depth + 1}>
-        {depth === 0 ? <Card>{props.children}</Card> : <>{props.children}</>}
+        {depth === 0 && !props.no_card ? (
+          <Card>{props.children}</Card>
+        ) : (
+          <>{props.children}</>
+        )}
       </ColContext.Provider>
     </ColBase>
   );

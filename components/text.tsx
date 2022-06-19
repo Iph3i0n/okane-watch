@@ -1,3 +1,4 @@
+import React from "react";
 import Styled from "styled-components";
 
 export const H1 = Styled.h1`
@@ -22,3 +23,18 @@ export const Badge = Styled.small`
   border-radius: var(--border-radius);
   vertical-align: super;
 `;
+
+export const LinkButton: React.C<{ action: () => void }> = ({
+  action,
+  children,
+}) => (
+  <a
+    href="#"
+    onClick={(e) => {
+      e.preventDefault();
+      action();
+    }}
+  >
+    {children}
+  </a>
+);

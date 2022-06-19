@@ -197,7 +197,7 @@ export default CreatePage(
           </Col>
         </Row>
         <Row>
-          <Col xs="12" md="8">
+          <Col xs="12" md="10">
             <Paginator
               skip={props.skip}
               take={props.take}
@@ -211,7 +211,7 @@ export default CreatePage(
               }
             />
           </Col>
-          <Col xs="12" md="4">
+          <Col xs="12" md="2">
             <ThemeButton
               type="button"
               onClick={() => {
@@ -265,12 +265,12 @@ export default CreatePage(
               </option>
               {props.categories.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.name}
+                  {p.personal ? `(${uitext.personal})` : ""} {p.name}
                 </option>
               ))}
             </Form.Select>
             <Form.NumberInput name="amount" min={0} decimal_places={2}>
-              {uitext.amount} ({uitext.currency})
+              {`${uitext.amount} (${uitext.currency})`}
             </Form.NumberInput>
             <ThemeButton type="submit">{uitext.submit}</ThemeButton>
           </Form>
