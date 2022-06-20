@@ -43,6 +43,7 @@ TODO:
 - [ ] Dept management
 - [ ] Budget after bills
 - [ ] Your account
+- [ ] Auth0
 
 ## Aspirations
 
