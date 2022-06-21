@@ -6,11 +6,11 @@
   "main": "./dist/server.js",
   "scripts": {
     "dev": "ts-node --project tsconfig.server.json ./server.ts",
-    "build": "npm run generate-icons && next build",
+    "build": "next build",
     "start": "NODE_ENV=production ts-node --project tsconfig.server.json ./server.ts",
     "lint": "next lint",
     "generate-icons": "ts-node --project tsconfig.server.json ./resources/generate-icons.ts",
-    "postinstall": "npm run generate-icons"
+    "dockerify": "npm run generate-icons && docker build -t iph3i0n/okane-watch ."
   },
   "repository": {
     "type": "git",

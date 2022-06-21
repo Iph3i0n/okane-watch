@@ -14,6 +14,18 @@ jobs:
       -
         name: Checkout 
         uses: actions/checkout@v2
+      
+      -
+        name: Install
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14
+          cache: 'npm'
+
+      -
+        name: Generate Icons
+        run: npm run generate-icons
+
       -
         name: Login to Docker Hub
         uses: docker/login-action@v1
